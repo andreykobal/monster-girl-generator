@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-
+import React, { useState } from "react";
 import axios from "axios";
 import BgImage from "./assets/bg.jpeg";
 import localFont from "next/font/local";
@@ -325,17 +324,6 @@ async function uploadMetadataToPinata(metadata) {
   }
 }
 
-// Helper function to generate a random color from Tailwind's color palette
-// Helper function to generate a random color (without changing the shade for border)
-function getRandomColor() {
-  const colors = [
-    'red', 'yellow', 'green', 'blue', 'indigo', 'purple', 'pink', 'orange',
-    'teal', 'cyan', 'emerald', 'lime', 'rose', 'violet', 'fuchsia'
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-}
-
-
 // -----------------------------------------------------------------------------
 // MONSTER GIRL GENERATOR COMPONENT
 // -----------------------------------------------------------------------------
@@ -345,34 +333,13 @@ function MonsterGirlGenerator() {
   const [error, setError] = useState(null);
   const [minting, setMinting] = useState(false);
 
-  const [borderColor, setBorderColor] = useState('');
-  const [shadowColor, setShadowColor] = useState('');
-
-  // Set random border and shadow color on component mount
-  useEffect(() => {
-    const randomBorder = getRandomColor();
-    const randomShadow = getRandomColor();
-    setBorderColor(randomBorder);
-    setShadowColor(randomShadow);
-  }, []);
-
-
   // useWriteContract hook to call the contract's createToken function.
   const { writeContractAsync: mintToken } = useWriteContract();
 
-  // Handler to generate a monster girl and update the colors
-  // Handler to generate a monster girl and update the colors
+  // Handler to generate a monster girl.
   const handleGenerate = async () => {
     setLoading(true);
-    setCharacterData(null);
     setError(null);
-
-    // Generate random color for the border and shadow (with fixed shade for border)
-    const randomBorder = getRandomColor(); // Border will always use shade 500
-    const randomShadow = getRandomColor(); // Shadow will always use 500/50 opacity
-    setBorderColor(`${randomBorder}-500`);
-    setShadowColor(`${randomShadow}-500/50`);
-
     try {
       const data = await generateData();
       setCharacterData(data);
@@ -478,7 +445,7 @@ function MonsterGirlGenerator() {
           </div>
         )}
         {characterData && (
-          <div className={`mt-4 w-full max-w-5xl bg-zinc-950 p-6 rounded-xl shadow-lg border-2 border-${borderColor} shadow-${shadowColor}/50`}>
+          <div className="mt-4 w-full max-w-5xl bg-zinc-950 p-6 rounded-xl shadow-lg border-orange-500 shadow-orange-500/50">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2">
                 <img
