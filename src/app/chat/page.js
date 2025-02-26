@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaPaperPlane, FaHome } from 'react-icons/fa';
 import { ImSpinner2 } from 'react-icons/im';
 
@@ -20,6 +20,7 @@ export default function Home() {
     const [chatInput, setChatInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]); // Initialize suggestions state
+    const chatContainerRef = useRef(null); // Reference for the chat container
 
     // Initialize chat with the hardcoded character data
     useEffect(() => {
@@ -73,7 +74,7 @@ export default function Home() {
                                         type: 'array',
                                         items: {
                                             type: 'string',
-                                            description: 'Suggestions for how the user can respond.'
+                                            description: 'short suggestions for how the user can respond in format dialogue + action enclosed in asterisks.'
                                         }
                                     }
                                 },
@@ -90,18 +91,11 @@ export default function Home() {
             }
 
             const result = await response.json();
-            console.log('API Response:', result);
-
             const message = result.choices[0].message;
             const parsedMessage = JSON.parse(message.content); // Parse the content
 
-            console.log('Parsed Message:', parsedMessage);
-
             const characterResponse = parsedMessage.character_response;
             const suggestionsList = parsedMessage.suggestions;
-
-            console.log('Character Response:', characterResponse);
-            console.log('Suggestions:', suggestionsList);
 
             if (!characterResponse || !suggestionsList) {
                 throw new Error('Missing character_response or suggestions.');
@@ -128,6 +122,16 @@ export default function Home() {
         handleSendMessage({ preventDefault: () => { } }, suggestion); // Send the message immediately
     };
 
+    // Scroll to the bottom of the chat container whenever messages change
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
+    }, [messages]);
+
     return (
         <>
             <div className="fixed top-4 left-4 z-50">
@@ -150,7 +154,7 @@ export default function Home() {
                             </div>
                         </div>
                     </header>
-                    <div className="flex-1 overflow-y-auto p-4" id="chat-container">
+                    <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef} id="chat-container">
                         {messages.filter((msg) => msg.role !== 'system').map((msg, idx) => (
                             <div key={idx} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
                                 <span className={`inline-block max-w-[80%] p-2 rounded-xl bg-opacity-80 backdrop-blur-xl ${msg.role === 'user' ? 'bg-purple-600 text-white' : 'bg-neutral-900 text-white'}`}>
@@ -165,7 +169,7 @@ export default function Home() {
                             <button
                                 key={index}
                                 onClick={() => handleSuggestionClick(suggestion)}
-                                className="btn-suggestion px-4 py-2 bg-blue-600 text-white rounded"
+                                className="btn-suggestion px-2 py-1 bg-blue-600 text-white rounded text-xs"
                             >
                                 {suggestion}
                             </button>
