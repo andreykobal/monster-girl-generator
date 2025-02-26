@@ -18,6 +18,8 @@ import { base } from "wagmi/chains";
 import { PinataSDK } from "pinata-web3";
 import imageCompression from "browser-image-compression"; // Use browser-image-compression
 
+import TypingEffect from "./TypingEffect";
+
 // Load your custom font.
 const gothicByte = localFont({
   src: "./assets/GothicByte.ttf",
@@ -134,7 +136,7 @@ ${imageDescription}
 
   const headers = {
     Authorization:
-      "Bearer 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",
+      `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
     "Content-Type": "application/json",
   };
 
@@ -206,12 +208,12 @@ async function generateData() {
   const imageNumberStr = randomNumber.toString().padStart(4, "0");
   const blobBaseUrl =
     "https://metaversetestnetstorage.blob.core.windows.net/monster-girls/";
-  const imageUrl = `${blobBaseUrl}${imageNumberStr}.png`;
+  const imageUrl = `${blobBaseUrl}${imageNumberStr}.png`;  // Use Azure image URL
 
   console.log("Selected image URL:", imageUrl);
 
   try {
-    // Fetch the image as a Blob from Azure.
+    // Fetch the image as a Blob from Azure (only for image processing).
     const imageResponse = await axios.get(imageUrl, { responseType: "blob" });
 
     // Use browser-image-compression to convert the PNG Blob to a JPEG Blob with 80% quality.
@@ -224,6 +226,10 @@ async function generateData() {
     const jpgFile = new File([jpgBlob], `${imageNumberStr}.jpg`, {
       type: "image/jpeg",
     });
+
+    // Upload the processed image to Pinata (we only use Pinata to store the processed image).
+    const imagePinataUrl = await uploadImageToPinata(jpgFile);
+    console.log("Image uploaded to Pinata:", imagePinataUrl);
 
     // Convert the JPEG Blob to a Base64 URL for the image description API.
     const base64Jpg = await blobToBase64(jpgBlob);
@@ -252,7 +258,7 @@ async function generateData() {
 
     const headers = {
       Authorization:
-        "Bearer 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",
+        `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
     };
 
@@ -274,9 +280,16 @@ async function generateData() {
     // Second API call: Generate the character card using the image description.
     const characterCard = await generateCharacterCard(imageDescription);
     if (characterCard) {
-      // Instead of using the original Azure link, upload the converted JPEG to Pinata.
-      const imagePinataUrl = await uploadImageToPinata(jpgFile);
-      characterCard.image = imagePinataUrl;
+      // Use the Pinata URL in metadata, but use Azure URL for frontend display.
+      characterCard.image = imagePinataUrl;  // Use Pinata URL for metadata
+
+      // Upload metadata JSON to Pinata
+      const metadataUrl = await uploadMetadataToPinata(characterCard);
+      console.log("Uploaded metadata URL:", metadataUrl);
+
+      // Return the character card with the Azure image URL for frontend display
+      characterCard.azureImageUrl = imageUrl; // Include Azure image URL for display in frontend
+
       return characterCard;
     } else {
       throw new Error("Failed to generate character card");
@@ -286,6 +299,7 @@ async function generateData() {
     throw error;
   }
 }
+
 
 // -----------------------------------------------------------------------------
 // Helper: Upload metadata JSON to Pinata and return the gateway URL.
@@ -397,7 +411,7 @@ function MonsterGirlGenerator() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center p-4 w-full">
+    <div className="relative min-h-screen flex flex-col items-center p-4 w-full pt-16">
       <video
         autoPlay
         loop
@@ -411,34 +425,37 @@ function MonsterGirlGenerator() {
       </video>
       <div className="relative z-10 w-full items-center flex flex-col justify-center">
         <h1
-          className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}
+          className={`${gothicByte.className} text-4xl md:text-8xl text-center font-bold mb-4 text-white`}
         >
           Monster Girl Generator
         </h1>
+        {!loading && (
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="mb-4 px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-        >
-          {loading ? "Generating..." : "Generate Monster Girl"}
+          className="px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 glow-on-hover"
+        > 
+          Generate Monster Girl
         </button>
+        )}
+        {loading && <TypingEffect />}
         {error && (
           <div className="mb-4 p-4 bg-red-200 text-red-800 rounded">
             {error}
           </div>
         )}
         {characterData && (
-          <div className="w-full max-w-5xl bg-white p-6 rounded shadow">
+          <div className="mt-4 w-full max-w-6xl bg-zinc-950 p-6 rounded-xl shadow">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2">
                 <img
-                  src={characterData.image}
+                  src={characterData.azureImageUrl} // Use the Azure URL for frontend display
                   alt="Random Monster Girl"
-                  className="w-full h-auto mb-4 md:mb-0 rounded"
+                  className="w-full h-auto mb-4 md:mb-0 rounded-xl"
                 />
               </div>
               <div className="md:w-1/2 md:pl-6">
-                <div className="whitespace-pre-wrap text-gray-800 font-mono text-sm">
+                <div className="whitespace-pre-wrap text-zinc-100 space-y-1 font-mono text-sm">
                   <p className="font-bold">Name</p>
                   <p>{characterData.name}</p>
                   <p className="font-bold">Age</p>
@@ -455,7 +472,7 @@ function MonsterGirlGenerator() {
                 <button
                   onClick={handleMint}
                   disabled={minting}
-                  className="mt-4 px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                  className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-violet-500/50 border-2 border-violet-500"
                 >
                   {minting ? "Minting..." : "Mint Monster Girl"}
                 </button>
