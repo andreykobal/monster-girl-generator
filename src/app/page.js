@@ -16,6 +16,7 @@ import { http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { baseSepolia } from "wagmi/chains";
 import { PinataSDK } from "pinata-web3";
+import imageCompression from "browser-image-compression"; // Use browser-image-compression
 
 // Load your custom font.
 const gothicByte = localFont({
@@ -27,7 +28,8 @@ const gothicByte = localFont({
 const customBaseSepolia = {
   ...baseSepolia,
   rpcUrls: {
-    default: "https://base-sepolia.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W",
+    default:
+      "https://base-sepolia.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W",
   },
 };
 
@@ -47,13 +49,10 @@ const config = getDefaultConfig({
 const queryClient = new QueryClient();
 
 // Smart contract configuration.
-// This is your deployed smart contract address and ABI that exposes a createToken function.
 const CONTRACT_ADDRESS = "0x1E4c364B90Ad0fC24F14c1b33234d87CDE752Dd2";
 const contractABI = [
   {
-    inputs: [
-      { internalType: "string", name: "tokenUrl", type: "string" }
-    ],
+    inputs: [{ internalType: "string", name: "tokenUrl", type: "string" }],
     name: "createToken",
     outputs: [],
     stateMutability: "nonpayable",
@@ -183,7 +182,23 @@ ${imageDescription}
   }
 }
 
-// Generate monster girl data by fetching a random image, getting its description,
+// New Helper: Upload converted image to Pinata.
+async function uploadImageToPinata(imageFile) {
+  try {
+    const pinata = new PinataSDK({
+      pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT,
+    });
+    const uploadResponse = await pinata.upload.file(imageFile);
+    console.debug("uploadImageToPinata: Upload response", uploadResponse);
+    const ipfsHash = uploadResponse.IpfsHash;
+    return `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+  } catch (error) {
+    console.error("Error uploading image to Pinata:", error);
+    throw error;
+  }
+}
+
+// Generate monster girl data by fetching a random image, converting it, getting its description,
 // and then generating a character card.
 async function generateData() {
   const totalImages = 2270;
@@ -196,9 +211,22 @@ async function generateData() {
   console.log("Selected image URL:", imageUrl);
 
   try {
-    // Fetch the image as a Blob and convert it to a Base64 URL.
+    // Fetch the image as a Blob from Azure.
     const imageResponse = await axios.get(imageUrl, { responseType: "blob" });
-    const base64Image = await blobToBase64(imageResponse.data);
+
+    // Use browser-image-compression to convert the PNG Blob to a JPEG Blob with 80% quality.
+    const jpgBlob = await imageCompression(imageResponse.data, {
+      fileType: "image/jpeg",
+      quality: 0.8,
+    });
+
+    // Create a File from the converted JPEG Blob.
+    const jpgFile = new File([jpgBlob], `${imageNumberStr}.jpg`, {
+      type: "image/jpeg",
+    });
+
+    // Convert the JPEG Blob to a Base64 URL for the image description API.
+    const base64Jpg = await blobToBase64(jpgBlob);
 
     // First API call: Get a detailed image description.
     const payloadDescription = {
@@ -215,7 +243,7 @@ async function generateData() {
             { type: "text", text: "What's in this image?" },
             {
               type: "image_url",
-              image_url: { url: base64Image },
+              image_url: { url: base64Jpg },
             },
           ],
         },
@@ -246,8 +274,9 @@ async function generateData() {
     // Second API call: Generate the character card using the image description.
     const characterCard = await generateCharacterCard(imageDescription);
     if (characterCard) {
-      // Append the image URL to the character card.
-      characterCard.image = imageUrl;
+      // Instead of using the original Azure link, upload the converted JPEG to Pinata.
+      const imagePinataUrl = await uploadImageToPinata(jpgFile);
+      characterCard.image = imagePinataUrl;
       return characterCard;
     } else {
       throw new Error("Failed to generate character card");
@@ -265,7 +294,9 @@ async function uploadMetadataToPinata(metadata) {
   try {
     const metadataString = JSON.stringify(metadata);
     const blob = new Blob([metadataString], { type: "application/json" });
-    const file = new File([blob], "metadata.json", { type: "application/json" });
+    const file = new File([blob], "metadata.json", {
+      type: "application/json",
+    });
     const pinata = new PinataSDK({
       pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT,
     });
