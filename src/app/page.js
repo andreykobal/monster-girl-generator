@@ -14,7 +14,7 @@ import {
 import { WagmiProvider, useWriteContract } from "wagmi";
 import { http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { baseSepolia } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { PinataSDK } from "pinata-web3";
 import imageCompression from "browser-image-compression"; // Use browser-image-compression
 
@@ -25,11 +25,11 @@ const gothicByte = localFont({
 });
 
 // Create a custom chain config for Base Sepolia using your RPC URL.
-const customBaseSepolia = {
-  ...baseSepolia,
+const customBase = {
+  ...base,
   rpcUrls: {
     default:
-      "https://base-sepolia.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W",
+      "https://base-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W",
   },
 };
 
@@ -37,9 +37,9 @@ const customBaseSepolia = {
 const config = getDefaultConfig({
   appName: "Monster Girl Generator",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-  chains: [customBaseSepolia],
+  chains: [customBase],
   transports: {
-    [customBaseSepolia.id]: http(
+    [customBase.id]: http(
       "https://base-sepolia.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"
     ),
   },
@@ -49,7 +49,7 @@ const config = getDefaultConfig({
 const queryClient = new QueryClient();
 
 // Smart contract configuration.
-const CONTRACT_ADDRESS = "0x1E4c364B90Ad0fC24F14c1b33234d87CDE752Dd2";
+const CONTRACT_ADDRESS = "0x019c7d3FdC33E28967c3Abe83F3BdF55f16dbF59";
 const contractABI = [
   {
     inputs: [{ internalType: "string", name: "tokenUrl", type: "string" }],
