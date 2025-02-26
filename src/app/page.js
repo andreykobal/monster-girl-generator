@@ -3,6 +3,15 @@
 import React, { useState } from "react";
 import axios from "axios";
 import JSON5 from "json5";
+import BgImage from "./assets/bg.jpeg";
+
+import localFont from 'next/font/local';
+
+
+const gothicByte = localFont({
+  src: "./assets/GothicByte.ttf",
+  display: "swap",
+});
 
 // Helper function to convert a Blob into a Base64 data URL.
 function blobToBase64(blob) {
@@ -210,32 +219,58 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
-      <h1 className="text-3xl font-bold text-zinc-900 mb-4">Monster Girl Generator</h1>
-      <button
-        onClick={handleGenerate}
-        disabled={loading}
-        className="mb-4 px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+    <div className="relative min-h-screen flex flex-col items-center p-4 w-full">
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster={BgImage.src}
+        className="absolute inset-0 object-cover w-full h-full"
       >
-        {loading ? "Generating..." : "Generate"}
-      </button>
-      {error && (
-        <div className="mb-4 p-4 bg-red-200 text-red-800 rounded">
-          {error}
-        </div>
-      )}
-      {characterData && (
-        <div className="w-full max-w-2xl bg-white p-6 rounded shadow">
-          <img
-            src={characterData.image}
-            alt="Random Monster Girl"
-            className="w-full h-auto mb-4 rounded"
-          />
-          <pre className="whitespace-pre-wrap text-gray-800">
-            {JSON.stringify(characterData, null, 2)}
-          </pre>
-        </div>
-      )}
+        <source src="/bg2.webm" type="video/webm" />
+        Your browser does not support the video tag.
+      </video>
+      <div className="relative z-10 w-full items-center flex flex-col justify-center">
+        <h1 className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}>
+          Monster Girl Generator
+        </h1>       
+         <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className="mb-4 px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          {loading ? "Generating..." : "Generate"}
+        </button>
+        {error && (
+          <div className="mb-4 p-4 bg-red-200 text-red-800 rounded">
+            {error}
+          </div>
+        )}
+        {characterData && (
+          <div className="w-full max-w-2xl bg-white p-6 rounded shadow">
+            <img
+              src={characterData.image}
+              alt="Random Monster Girl"
+              className="w-full h-auto mb-4 rounded"
+            />
+            <div className="whitespace-pre-wrap text-gray-800 font-mono text-sm">
+              <p className="font-bold">Name</p>
+              <p>{characterData.name}</p>
+              <p className="font-bold">Age</p>
+              <p>{characterData.age}</p>
+              <p className="font-bold">Race</p>
+              <p>{characterData.race}</p>
+              <p className="font-bold">Profession</p>
+              <p>{characterData.profession}</p>
+              <p className="font-bold">Bio</p>
+              <p>{characterData.bio}</p>
+              <p className="font-bold">First Message</p>
+              <p>{characterData["first message"]}</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
