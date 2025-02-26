@@ -4,9 +4,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import JSON5 from "json5";
 import BgImage from "./assets/bg.jpeg";
-
-import localFont from 'next/font/local';
-
+import localFont from "next/font/local";
 
 const gothicByte = localFont({
   src: "./assets/GothicByte.ttf",
@@ -23,15 +21,29 @@ function blobToBase64(blob) {
   });
 }
 
+// Third fallback: Use regex extraction to parse the character card content.
+function parseCharacterCardFallback(str) {
+  const regex = /['"]?([\w\s]+)['"]?\s*:\s*(['"])([\s\S]*?)\2/g;
+  let match;
+  const result = {};
+  while ((match = regex.exec(str)) !== null) {
+    const key = match[1].trim();
+    const value = match[3].trim();
+    result[key] = value;
+  }
+  return result;
+}
+
 // Helper function to generate the character card (with retries).
 async function generateCharacterCard(imageDescription, retryCount = 0) {
   const payloadCharacterCard = {
     model: "sao10k/l3.1-70b-hanami-x1",
-    max_tokens: 512,
+    max_tokens: 1024,
     messages: [
       {
         role: "system",
-        content: "You are a creative writer that helps to create monster girl character cards.",
+        content:
+          "You are a creative writer that helps to create monster girl character cards.",
       },
       {
         role: "user",
@@ -97,6 +109,18 @@ ${imageDescription}
           return JSON5.parse(content);
         } catch (e2) {
           console.error("JSON5 parsing also failed:", e2.message);
+          // Third fallback: use regex-based extraction
+          try {
+            const fallbackParsed = parseCharacterCardFallback(content);
+            if (fallbackParsed && Object.keys(fallbackParsed).length > 0) {
+              console.log("Fallback parsing succeeded.");
+              return fallbackParsed;
+            } else {
+              console.error("Fallback parsing returned an empty object.");
+            }
+          } catch (e3) {
+            console.error("Fallback parsing also failed:", e3.message);
+          }
         }
       }
     } else {
@@ -109,7 +133,7 @@ ${imageDescription}
     );
   }
 
-  if (retryCount < 3) {
+  if (retryCount < 10) {
     console.log("Retrying character card generation...");
     return await generateCharacterCard(imageDescription, retryCount + 1);
   } else {
@@ -207,7 +231,8 @@ export default function Page() {
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
-    setCharacterData(null);
+    // Remove or comment out the line below so the previous card remains visible.
+    // setCharacterData(null);
     try {
       const data = await generateData();
       setCharacterData(data);
@@ -228,14 +253,16 @@ export default function Page() {
         poster={BgImage.src}
         className="absolute inset-0 object-cover w-full h-full"
       >
-        <source src="/bg2.webm" type="video/webm" />
+        <source src="/bg.webm" type="video/webm" />
         Your browser does not support the video tag.
       </video>
       <div className="relative z-10 w-full items-center flex flex-col justify-center">
-        <h1 className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}>
+        <h1
+          className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}
+        >
           Monster Girl Generator
-        </h1>       
-         <button
+        </h1>
+        <button
           onClick={handleGenerate}
           disabled={loading}
           className="mb-4 px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
@@ -248,25 +275,31 @@ export default function Page() {
           </div>
         )}
         {characterData && (
-          <div className="w-full max-w-2xl bg-white p-6 rounded shadow">
-            <img
-              src={characterData.image}
-              alt="Random Monster Girl"
-              className="w-full h-auto mb-4 rounded"
-            />
-            <div className="whitespace-pre-wrap text-gray-800 font-mono text-sm">
-              <p className="font-bold">Name</p>
-              <p>{characterData.name}</p>
-              <p className="font-bold">Age</p>
-              <p>{characterData.age}</p>
-              <p className="font-bold">Race</p>
-              <p>{characterData.race}</p>
-              <p className="font-bold">Profession</p>
-              <p>{characterData.profession}</p>
-              <p className="font-bold">Bio</p>
-              <p>{characterData.bio}</p>
-              <p className="font-bold">First Message</p>
-              <p>{characterData["first message"]}</p>
+          <div className="w-full max-w-5xl bg-white p-6 rounded shadow">
+            <div className="flex flex-col md:flex-row">
+              <div className="md:w-1/2">
+                <img
+                  src={characterData.image}
+                  alt="Random Monster Girl"
+                  className="w-full h-auto mb-4 md:mb-0 rounded"
+                />
+              </div>
+              <div className="md:w-1/2 md:pl-6">
+                <div className="whitespace-pre-wrap text-gray-800 font-mono text-sm">
+                  <p className="font-bold">Name</p>
+                  <p>{characterData.name}</p>
+                  <p className="font-bold">Age</p>
+                  <p>{characterData.age}</p>
+                  <p className="font-bold">Race</p>
+                  <p>{characterData.race}</p>
+                  <p className="font-bold">Profession</p>
+                  <p>{characterData.profession}</p>
+                  <p className="font-bold">Bio</p>
+                  <p>{characterData.bio}</p>
+                  <p className="font-bold">First Message</p>
+                  <p>{characterData["first message"]}</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
