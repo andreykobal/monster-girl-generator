@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import axios from "axios";
-import JSON5 from "json5";
 import BgImage from "./assets/bg.jpeg";
 import localFont from "next/font/local";
 
@@ -21,7 +20,7 @@ function blobToBase64(blob) {
   });
 }
 
-// Third fallback: Use regex extraction to parse the character card content.
+// Fallback: Use regex extraction to parse the character card content.
 function parseCharacterCardFallback(str) {
   const regex = /['"]?([\w\s]+)['"]?\s*:\s*(['"])([\s\S]*?)\2/g;
   let match;
@@ -101,27 +100,13 @@ ${imageDescription}
       if (start !== -1 && end !== -1 && end > start) {
         content = content.substring(start, end + 1);
       }
-      try {
-        return JSON.parse(content);
-      } catch (e) {
-        console.error("Strict JSON parsing failed:", e.message);
-        try {
-          return JSON5.parse(content);
-        } catch (e2) {
-          console.error("JSON5 parsing also failed:", e2.message);
-          // Third fallback: use regex-based extraction
-          try {
-            const fallbackParsed = parseCharacterCardFallback(content);
-            if (fallbackParsed && Object.keys(fallbackParsed).length > 0) {
-              console.log("Fallback parsing succeeded.");
-              return fallbackParsed;
-            } else {
-              console.error("Fallback parsing returned an empty object.");
-            }
-          } catch (e3) {
-            console.error("Fallback parsing also failed:", e3.message);
-          }
-        }
+      // Use regex-based extraction as the only parsing method.
+      const parsedContent = parseCharacterCardFallback(content);
+      if (parsedContent && Object.keys(parsedContent).length > 0) {
+        console.log("Fallback parsing succeeded.");
+        return parsedContent;
+      } else {
+        console.error("Fallback parsing returned an empty object.");
       }
     } else {
       console.log("No character card content found in the response.");
@@ -257,9 +242,7 @@ export default function Page() {
         Your browser does not support the video tag.
       </video>
       <div className="relative z-10 w-full items-center flex flex-col justify-center">
-        <h1
-          className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}
-        >
+        <h1 className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}>
           Monster Girl Generator
         </h1>
         <button
