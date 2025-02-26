@@ -5,12 +5,66 @@ import axios from "axios";
 import BgImage from "./assets/bg.jpeg";
 import localFont from "next/font/local";
 
+import "@rainbow-me/rainbowkit/styles.css";
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+  ConnectButton,
+} from "@rainbow-me/rainbowkit";
+import { WagmiProvider, useWriteContract } from "wagmi";
+import { http } from "wagmi";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { baseSepolia } from "wagmi/chains";
+
+// Load your custom font.
 const gothicByte = localFont({
   src: "./assets/GothicByte.ttf",
   display: "swap",
 });
 
-// Helper function to convert a Blob into a Base64 data URL.
+// Create a custom chain config for Base Sepolia using your RPC URL.
+const customBaseSepolia = {
+  ...baseSepolia,
+  rpcUrls: {
+    default: "https://base-sepolia.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W",
+  },
+};
+
+// Configure RainbowKit/wagmi with your custom chain.
+const config = getDefaultConfig({
+  appName: "Monster Girl Generator",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+  chains: [customBaseSepolia],
+  transports: {
+    [customBaseSepolia.id]: http(
+      "https://base-sepolia.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"
+    ),
+  },
+  ssr: true,
+});
+
+const queryClient = new QueryClient();
+
+// Smart contract configuration.
+// This is your deployed smart contract address and ABI that exposes a createToken function.
+const CONTRACT_ADDRESS = "0x1E4c364B90Ad0fC24F14c1b33234d87CDE752Dd2";
+const contractABI = [
+  {
+    inputs: [
+      { internalType: "string", name: "tokenUrl", type: "string" }
+    ],
+    name: "createToken",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];
+
+// -----------------------------------------------------------------------------
+// MONSTER GIRL GENERATOR HELPER FUNCTIONS
+// -----------------------------------------------------------------------------
+
+// Convert a Blob into a Base64 data URL.
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -20,7 +74,7 @@ function blobToBase64(blob) {
   });
 }
 
-// Fallback: Use regex extraction to parse the character card content.
+// Fallback: Use regex extraction to parse a character card string.
 function parseCharacterCardFallback(str) {
   const regex = /['"]?([\w\s]+)['"]?\s*:\s*(['"])([\s\S]*?)\2/g;
   let match;
@@ -33,7 +87,7 @@ function parseCharacterCardFallback(str) {
   return result;
 }
 
-// Helper function to generate the character card (with retries).
+// Generate the character card using an API (with retry logic).
 async function generateCharacterCard(imageDescription, retryCount = 0) {
   const payloadCharacterCard = {
     model: "sao10k/l3.1-70b-hanami-x1",
@@ -100,7 +154,6 @@ ${imageDescription}
       if (start !== -1 && end !== -1 && end > start) {
         content = content.substring(start, end + 1);
       }
-      // Use regex-based extraction as the only parsing method.
       const parsedContent = parseCharacterCardFallback(content);
       if (parsedContent && Object.keys(parsedContent).length > 0) {
         console.log("Fallback parsing succeeded.");
@@ -129,7 +182,8 @@ ${imageDescription}
   }
 }
 
-// Main function to pick a random image from blob storage, get an image description, and generate a character card.
+// Generate monster girl data by fetching a random image, getting its description,
+// and then generating a character card.
 async function generateData() {
   const totalImages = 2270;
   const randomNumber = Math.floor(Math.random() * totalImages) + 1;
@@ -141,7 +195,7 @@ async function generateData() {
   console.log("Selected image URL:", imageUrl);
 
   try {
-    // Fetch the image from blob storage as a Blob.
+    // Fetch the image as a Blob and convert it to a Base64 URL.
     const imageResponse = await axios.get(imageUrl, { responseType: "blob" });
     const base64Image = await blobToBase64(imageResponse.data);
 
@@ -157,15 +211,10 @@ async function generateData() {
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: "What's in this image?",
-            },
+            { type: "text", text: "What's in this image?" },
             {
               type: "image_url",
-              image_url: {
-                url: base64Image,
-              },
+              image_url: { url: base64Image },
             },
           ],
         },
@@ -208,16 +257,22 @@ async function generateData() {
   }
 }
 
-export default function Page() {
+// -----------------------------------------------------------------------------
+// MONSTER GIRL GENERATOR COMPONENT
+// -----------------------------------------------------------------------------
+function MonsterGirlGenerator() {
   const [loading, setLoading] = useState(false);
   const [characterData, setCharacterData] = useState(null);
   const [error, setError] = useState(null);
+  const [minting, setMinting] = useState(false);
 
+  // useWriteContract hook to call the contract's createToken function.
+  const { writeContractAsync: mintToken } = useWriteContract();
+
+  // Handler to generate a monster girl.
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
-    // Remove or comment out the line below so the previous card remains visible.
-    // setCharacterData(null);
     try {
       const data = await generateData();
       setCharacterData(data);
@@ -225,6 +280,30 @@ export default function Page() {
       setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handler to mint the generated monster girl using your smart contract.
+  const handleMint = async () => {
+    if (!characterData) return;
+    setMinting(true);
+    try {
+      // Hardcoded placeholder for tokenUrl.
+      const tokenUrlPlaceholder =
+        "https://example.com/placeholder-token.json";
+      const txHash = await mintToken({
+        abi: contractABI,
+        address: CONTRACT_ADDRESS,
+        functionName: "createToken",
+        args: [tokenUrlPlaceholder],
+      });
+      console.log("Mint transaction hash:", txHash);
+      alert("Mint successful! Transaction hash: " + txHash);
+    } catch (error) {
+      console.error("Error minting token:", error);
+      alert("Mint failed: " + error.message);
+    } finally {
+      setMinting(false);
     }
   };
 
@@ -242,7 +321,9 @@ export default function Page() {
         Your browser does not support the video tag.
       </video>
       <div className="relative z-10 w-full items-center flex flex-col justify-center">
-        <h1 className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}>
+        <h1
+          className={`${gothicByte.className} text-6xl font-bold mb-4 text-white`}
+        >
           Monster Girl Generator
         </h1>
         <button
@@ -250,7 +331,7 @@ export default function Page() {
           disabled={loading}
           className="mb-4 px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
         >
-          {loading ? "Generating..." : "Generate"}
+          {loading ? "Generating..." : "Generate Monster Girl"}
         </button>
         {error && (
           <div className="mb-4 p-4 bg-red-200 text-red-800 rounded">
@@ -282,11 +363,39 @@ export default function Page() {
                   <p className="font-bold">First Message</p>
                   <p>{characterData["first message"]}</p>
                 </div>
+                <button
+                  onClick={handleMint}
+                  disabled={minting}
+                  className="mt-4 px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                >
+                  {minting ? "Minting..." : "Mint Monster Girl"}
+                </button>
               </div>
             </div>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// APP COMPONENT WRAPPED WITH PROVIDERS
+// -----------------------------------------------------------------------------
+export default function App() {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <div className="relative min-h-screen">
+            {/* Connect Wallet button */}
+            <div className="fixed top-4 right-4 z-50">
+              <ConnectButton />
+            </div>
+            <MonsterGirlGenerator />
+          </div>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
