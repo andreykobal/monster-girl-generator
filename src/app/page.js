@@ -411,7 +411,7 @@ function MonsterGirlGenerator() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center p-4 w-full pt-16">
+    <div className="relative min-h-screen flex flex-col items-center p-4 w-full pt-8">
       <video
         autoPlay
         loop
@@ -445,7 +445,7 @@ function MonsterGirlGenerator() {
           </div>
         )}
         {characterData && (
-          <div className="mt-4 w-full max-w-6xl bg-zinc-950 p-6 rounded-xl shadow">
+          <div className="mt-4 w-full max-w-5xl bg-zinc-950 p-6 rounded-xl shadow">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2">
                 <img
@@ -455,7 +455,7 @@ function MonsterGirlGenerator() {
                 />
               </div>
               <div className="md:w-1/2 md:pl-6">
-                <div className="whitespace-pre-wrap text-zinc-100 space-y-1 font-mono text-sm">
+                <div className="whitespace-pre-wrap text-zinc-100 space-y-1 font-mono text-sm max-h-[560px] overflow-y-auto">
                   <p className="font-bold">Name</p>
                   <p>{characterData.name}</p>
                   <p className="font-bold">Age</p>
