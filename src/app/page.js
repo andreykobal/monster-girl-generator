@@ -445,7 +445,7 @@ function MonsterGirlGenerator() {
           </div>
         )}
         {characterData && (
-          <div className="mt-4 w-full max-w-5xl bg-zinc-950 p-6 rounded-xl shadow-lg border-2 border-orange-500 shadow-orange-500/50">
+          <div className="mt-4 w-full max-w-5xl bg-zinc-950 bg-opacity-80 backdrop-blur-lg p-6 rounded-xl shadow-lg">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2">
                 <img
@@ -469,6 +469,7 @@ function MonsterGirlGenerator() {
                   <p className="font-bold">First Message</p>
                   <p>{characterData["first message"]}</p>
                 </div>
+                <div className="flex w-full justify-center items-center">
                 <button
                   onClick={handleMint}
                   disabled={minting}
@@ -476,6 +477,7 @@ function MonsterGirlGenerator() {
                 >
                   {minting ? "Minting..." : "Mint Monster Girl"}
                 </button>
+                </div>
               </div>
             </div>
           </div>
