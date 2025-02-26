@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPaperPlane, FaHome } from 'react-icons/fa';
 import { ImSpinner2 } from 'react-icons/im';
 
@@ -8,24 +8,24 @@ import { ImSpinner2 } from 'react-icons/im';
 const characterData = {
     name: 'Eliza',
     age: 30,
-    profession: 'AI Expert',
+    profession: 'Arcane Technomancer',
     race: 'Human',
-    bio: 'Eliza is a highly skilled AI expert who loves to explore the possibilities of technology and human interaction.',
-    firstMessage: 'Hello, I am Eliza, your AI assistant.',
+    bio: 'Eliza is an Arcane Technomancer, a master of blending ancient magic with cutting-edge technology. She roams the realms, seeking to unlock forgotten secrets and forge new paths in the ever-evolving balance between magic and machine.',
+    firstMessage: '*The air crackles with ethereal energy as Eliza adjusts the glowing device in front of her, her fingers dancing over intricate runes. She looks up, her eyes gleaming with knowledge and curiosity.* "Ah, a new adventurer steps forth into the unknown. Welcome! You’ve arrived just in time to witness the merging of magic and technology. Will you join me in this grand quest?"',
     image: 'https://metaversetestnetstorage.blob.core.windows.net/generated-images/4728173c1cbb4098b939c9ae6933b426.png',
 };
 
-function Home() {
+
+export default function Home() {
     const [messages, setMessages] = useState([]);
     const [chatInput, setChatInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const chatContainerRef = useRef(null); // Reference to the chat container for scrolling
 
     // Initialize chat with the hardcoded character data
     useEffect(() => {
         const systemMessage = {
             role: 'system',
-            content: `You are a fictional character with the following details: Name: ${characterData.name}, Age: ${characterData.age}, Profession: ${characterData.profession}, Bio: ${characterData.bio}, Image Prompt: ${characterData.firstMessage}`,
+            content: `You are ${characterData.name}, a ${characterData.age}-year-old ${characterData.profession} in this fictional roleplay with the user. Describe your surroundings in vivid detail. Be creative, proactive, and detailed. Move the story forward by introducing fantasy elements and interesting characters. Use narration in asterisks before speaking your dialogue. Shorten your responses to keep the conversation engaging.`,
         };
         const characterFirstMessage = {
             role: 'assistant',
@@ -33,16 +33,6 @@ function Home() {
         };
         setMessages([systemMessage, characterFirstMessage]);
     }, []);
-
-    // Scroll to bottom whenever new messages are added
-    useEffect(() => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTo({
-                top: chatContainerRef.current.scrollHeight,
-                behavior: 'smooth',
-            });
-        }
-    }, [messages]);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -106,7 +96,7 @@ function Home() {
                             </div>
                         </div>
                     </header>
-                    <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef} id="chat-container">
+                    <div className="flex-1 overflow-y-auto p-4" id="chat-container">
                         {messages.filter((msg) => msg.role !== 'system').map((msg, idx) => (
                             <div key={idx} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
                                 <span className={`inline-block max-w-[80%] p-2 rounded-xl bg-opacity-80 backdrop-blur-xl ${msg.role === 'user' ? 'bg-purple-600 text-white' : 'bg-neutral-900 text-white'}`}>
@@ -126,13 +116,5 @@ function Home() {
                 </div>
             </div>
         </>
-    );
-}
-
-export default function App() {
-    return (
-        <div className="relative min-h-screen">
-            <Home />
-        </div>
     );
 }
