@@ -1,154 +1,138 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { FaPaperPlane, FaHome } from "react-icons/fa";
-import { ImSpinner2 } from "react-icons/im";
+import { useState, useEffect, useRef } from 'react';
+import { FaPaperPlane, FaHome } from 'react-icons/fa';
+import { ImSpinner2 } from 'react-icons/im';
 
-export default function ChatPage() {
+// Hardcoded character data
+const characterData = {
+    name: 'Eliza',
+    age: 30,
+    profession: 'AI Expert',
+    race: 'Human',
+    bio: 'Eliza is a highly skilled AI expert who loves to explore the possibilities of technology and human interaction.',
+    firstMessage: 'Hello, I am Eliza, your AI assistant.',
+    image: 'https://metaversetestnetstorage.blob.core.windows.net/generated-images/4728173c1cbb4098b939c9ae6933b426.png',
+};
+
+function Home() {
     const [messages, setMessages] = useState([]);
-    const [chatInput, setChatInput] = useState("");
+    const [chatInput, setChatInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [agentData, setAgentData] = useState(null);
-    const [downloading, setDownloading] = useState(false);
+    const chatContainerRef = useRef(null); // Reference to the chat container for scrolling
 
-    // Get character data from query params
-    const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get("name");
-    const age = urlParams.get("age");
-    const race = urlParams.get("race");
-    const profession = urlParams.get("profession");
-    const bio = urlParams.get("bio");
-    const firstMessage = urlParams.get("firstMessage");
-    const image = urlParams.get("image");
-
+    // Initialize chat with the hardcoded character data
     useEffect(() => {
-        if (name && age && race && profession && bio && firstMessage && image) {
-            const initialMessages = [
-                {
-                    role: "system",
-                    content: `You are a fictional character named ${name}. Age: ${age}. Race: ${race}. Profession: ${profession}. Bio: ${bio}.`,
-                },
-                {
-                    role: "assistant",
-                    content: firstMessage || "Hello, how can I assist you today?",
-                },
-            ];
-            setMessages(initialMessages);
-            setAgentData({ name, age, race, profession, bio, firstMessage, image });
+        const systemMessage = {
+            role: 'system',
+            content: `You are a fictional character with the following details: Name: ${characterData.name}, Age: ${characterData.age}, Profession: ${characterData.profession}, Bio: ${characterData.bio}, Image Prompt: ${characterData.firstMessage}`,
+        };
+        const characterFirstMessage = {
+            role: 'assistant',
+            content: characterData.firstMessage,
+        };
+        setMessages([systemMessage, characterFirstMessage]);
+    }, []);
+
+    // Scroll to bottom whenever new messages are added
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: 'smooth',
+            });
         }
-    }, [name, age, race, profession, bio, firstMessage, image]);
+    }, [messages]);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!chatInput.trim()) return;
-
-        const userMessage = {
-            role: "user",
-            content: chatInput.trim(),
-        };
-        const updatedMessages = [...messages, userMessage];
-        if (updatedMessages.length > 50) updatedMessages.slice(-50);
+        const newUserMessage = { role: 'user', content: chatInput.trim() };
+        let updatedMessages = [...messages, newUserMessage];
+        if (updatedMessages.length > 50) {
+            updatedMessages = updatedMessages.slice(updatedMessages.length - 50);
+        }
         setMessages(updatedMessages);
-        setChatInput("");
+        setChatInput('');
         setLoading(true);
-
         try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
                 },
                 body: JSON.stringify({
-                    model: "gpt-4o-2024-08-06",
+                    model: 'gpt-4o-2024-08-06',
                     messages: updatedMessages,
                 }),
             });
-
-            if (!response.ok) throw new Error("Failed to fetch from OpenAI");
-
+            if (!response.ok) {
+                throw new Error('Chat API call failed');
+            }
             const result = await response.json();
-            const newAssistantMessage = result.choices[0].message;
-            setMessages((prevMessages) => [...prevMessages, newAssistantMessage]);
+            const message = result.choices[0].message;
+            let newMessages = [...updatedMessages, message];
+            if (newMessages.length > 50) {
+                newMessages = newMessages.slice(newMessages.length - 50);
+            }
+            setMessages(newMessages);
         } catch (error) {
-            console.error("Error during chat:", error);
+            console.error('Error during chat:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        const chatContainer = document.getElementById("chat-container");
-        if (chatContainer) {
-            chatContainer.scrollTo({
-                top: chatContainer.scrollHeight,
-                behavior: "smooth",
-            });
-        }
-    }, [messages]);
-
     return (
-        <div className="relative min-h-dvh flex flex-col items-center justify-center bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
-            <div className="absolute top-4 left-4 z-50">
+        <>
+            <div className="fixed top-4 left-4 z-50">
                 <button
-                    onClick={() => window.history.back()}
+                    onClick={() => setMessages([])}
                     className="flex items-center space-x-2 px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
                 >
                     <FaHome className="text-xl" />
-                    <span>Back</span>
+                    <span>Home</span>
                 </button>
             </div>
-
-            <div className="relative w-full max-w-3xl min-h-dvh bg-zinc-900 bg-opacity-80 mx-auto flex flex-col p-6 rounded-lg shadow-lg">
-                <div className="flex items-center justify-center mb-4">
-                    <img
-                        src={agentData?.image || "/default-avatar.png"}
-                        alt="Character Avatar"
-                        className="w-20 h-20 rounded-full object-cover mr-4"
-                    />
-                    <div>
-                        <h1 className="text-white text-2xl font-bold">{agentData?.name || "Character"}</h1>
-                        <p className="text-white text-sm">{agentData?.profession || "Unknown Profession"}</p>
-                    </div>
-                </div>
-
-                <div
-                    id="chat-container"
-                    className="flex-1 overflow-y-auto p-4 bg-black bg-opacity-50 rounded-lg shadow-lg"
-                    style={{ maxHeight: "calc(100vh - 200px)" }}
-                >
-                    {messages
-                        .filter((msg, idx) => idx !== 0) // Hide the first system message
-                        .map((msg, idx) => (
-                            <div key={idx} className={`mb-2 ${msg.role === "user" ? "text-right" : "text-left"}`}>
-                                <span
-                                    className={`inline-block max-w-[80%] p-2 rounded-xl bg-opacity-80 backdrop-blur-xl ${msg.role === "user" ? "bg-purple-600 text-white" : "bg-neutral-900 text-white"}`}
-                                >
+            <div className="relative min-h-screen flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 filter blur-3xl z-[-1]" />
+                <div style={{ backgroundImage: `url(${characterData.image})` }} className="w-full max-w-[500px] h-screen bg-cover bg-center mx-auto relative flex flex-col">
+                    <header className="flex flex-col p-4 bg-black bg-opacity-50">
+                        <div className="flex items-center w-full">
+                            <img src={characterData.image} alt="Avatar" className="w-10 h-10 rounded-full object-cover object-top mr-4" />
+                            <div>
+                                <h1 className="text-white text-xl font-bold">{characterData.name}</h1>
+                            </div>
+                        </div>
+                    </header>
+                    <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef} id="chat-container">
+                        {messages.filter((msg) => msg.role !== 'system').map((msg, idx) => (
+                            <div key={idx} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                                <span className={`inline-block max-w-[80%] p-2 rounded-xl bg-opacity-80 backdrop-blur-xl ${msg.role === 'user' ? 'bg-purple-600 text-white' : 'bg-neutral-900 text-white'}`}>
                                     {msg.content}
                                 </span>
                             </div>
                         ))}
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-black bg-opacity-50">
-                    <form onSubmit={handleSendMessage} className="flex w-full">
-                        <input
-                            type="text"
-                            value={chatInput}
-                            onChange={(e) => setChatInput(e.target.value)}
-                            className="flex-1 p-2 rounded-l-lg bg-zinc-800 text-white border border-zinc-600"
-                            placeholder="Type your message..."
-                        />
-                        <button
-                            type="submit"
-                            className="p-4 bg-violet-500 rounded-r-lg text-white"
-                            disabled={loading}
-                        >
-                            {loading ? <ImSpinner2 className="animate-spin h-5 w-5" /> : <FaPaperPlane className="text-white text-xl" />}
-                        </button>
-                    </form>
+                    </div>
+                    <div className="p-4 bg-black bg-opacity-50">
+                        <form onSubmit={handleSendMessage} className="flex">
+                            <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 text-black p-2 rounded-l" placeholder="Type your message..." />
+                            <button type="submit" className="p-4 bg-violet-500 rounded-r">
+                                {loading ? <ImSpinner2 className="animate-spin h-5 w-5 text-white" /> : <FaPaperPlane className="text-white text-xl" />}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
+        </>
+    );
+}
+
+export default function App() {
+    return (
+        <div className="relative min-h-screen">
+            <Home />
         </div>
     );
 }
