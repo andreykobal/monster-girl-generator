@@ -21,6 +21,20 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]); // Initialize suggestions state
     const chatContainerRef = useRef(null); // Reference for the chat container
+    const [countdown, setCountdown] = useState(20); // Initialize the countdown timer state
+
+    useEffect(() => {
+        if (countdown > 0) {
+            const timer = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+
+            return () => clearInterval(timer); // Cleanup timer on component unmount
+        } else {
+            console.log('Messages after 20s countdown:', messages); // Log messages when timer ends
+        }
+    }, [countdown, messages]); // Re-run the effect whenever countdown or messages change
+
 
     // Initialize chat with the hardcoded character data
     useEffect(() => {
@@ -151,6 +165,9 @@ export default function Home() {
                             <img src={characterData.image} alt="Avatar" className="w-10 h-10 rounded-full object-cover object-top mr-4" />
                             <div>
                                 <h1 className="text-white text-xl font-bold">{characterData.name}</h1>
+                            </div>
+                            <div className="countdown-timer text-white p-2">
+                                Time remaining: {countdown}s
                             </div>
                         </div>
                     </header>
