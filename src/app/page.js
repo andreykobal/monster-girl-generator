@@ -15,6 +15,7 @@ import { WagmiProvider, useWriteContract } from "wagmi";
 import { http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { baseSepolia } from "wagmi/chains";
+import { PinataSDK } from "pinata-web3";
 
 // Load your custom font.
 const gothicByte = localFont({
@@ -258,6 +259,27 @@ async function generateData() {
 }
 
 // -----------------------------------------------------------------------------
+// Helper: Upload metadata JSON to Pinata and return the gateway URL.
+// -----------------------------------------------------------------------------
+async function uploadMetadataToPinata(metadata) {
+  try {
+    const metadataString = JSON.stringify(metadata);
+    const blob = new Blob([metadataString], { type: "application/json" });
+    const file = new File([blob], "metadata.json", { type: "application/json" });
+    const pinata = new PinataSDK({
+      pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT,
+    });
+    const uploadResponse = await pinata.upload.file(file);
+    console.debug("uploadMetadataToPinata: Upload response", uploadResponse);
+    const ipfsHash = uploadResponse.IpfsHash;
+    return `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+  } catch (error) {
+    console.error("Error uploading metadata to Pinata:", error);
+    throw error;
+  }
+}
+
+// -----------------------------------------------------------------------------
 // MONSTER GIRL GENERATOR COMPONENT
 // -----------------------------------------------------------------------------
 function MonsterGirlGenerator() {
@@ -288,14 +310,50 @@ function MonsterGirlGenerator() {
     if (!characterData) return;
     setMinting(true);
     try {
-      // Hardcoded placeholder for tokenUrl.
-      const tokenUrlPlaceholder =
-        "https://example.com/placeholder-token.json";
+      // Build the metadata JSON using characterData.
+      const metadata = {
+        description: "MONSTER GIRL NFT COLLECTION",
+        external_url: "https://app.avasocial.net/",
+        image: characterData.image,
+        name: "MONSTER GIRL",
+        attributes: [
+          {
+            trait_type: "name",
+            value: characterData.name,
+          },
+          {
+            trait_type: "age",
+            value: characterData.age,
+          },
+          {
+            trait_type: "race",
+            value: characterData.race,
+          },
+          {
+            trait_type: "profession",
+            value: characterData.profession,
+          },
+          {
+            trait_type: "bio",
+            value: characterData.bio,
+          },
+          {
+            trait_type: "firstMessage",
+            value: characterData["first message"],
+          },
+        ],
+      };
+
+      // Upload the metadata JSON to Pinata.
+      const metadataUrl = await uploadMetadataToPinata(metadata);
+      console.log("Uploaded metadata URL:", metadataUrl);
+
+      // Call the smart contract createToken function with the metadata URL.
       const txHash = await mintToken({
         abi: contractABI,
         address: CONTRACT_ADDRESS,
         functionName: "createToken",
-        args: [tokenUrlPlaceholder],
+        args: [metadataUrl],
       });
       console.log("Mint transaction hash:", txHash);
       alert("Mint successful! Transaction hash: " + txHash);
