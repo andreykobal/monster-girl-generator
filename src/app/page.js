@@ -1,101 +1,241 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+import axios from "axios";
+import JSON5 from "json5";
+
+// Helper function to convert a Blob into a Base64 data URL.
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// Helper function to generate the character card (with retries).
+async function generateCharacterCard(imageDescription, retryCount = 0) {
+  const payloadCharacterCard = {
+    model: "sao10k/l3.1-70b-hanami-x1",
+    max_tokens: 512,
+    messages: [
+      {
+        role: "system",
+        content: "You are a creative writer that helps to create monster girl character cards.",
+      },
+      {
+        role: "user",
+        content: `### Task:
+Using the provided image description, create a character card in JSON format.
+
+### Output Format (JSON):
+
+\`\`\`json
+{
+  "name": "A simple name",
+  "age": "Character's age",
+  "race": "Character's race",
+  "profession": "Character's profession",
+  "bio": "A short biography (2-3 paragraphs) written in the third person. It should be exaggerated, sassy, hilarious, absurd, awkward, and sexy. Use Gen Z slang. Include a short description of character's appearance and personality.",
+  "first message": "A short roleplay starter (maximum 1 paragraph), random and absurd situation between the character and user, that begins with a narrative enclosed in asterisks (**) followed by direct speech. Use hero's journey, Gen Z slang, and humor. Address the user as 'you'."
+}
+\`\`\`
+
+### Instructions:
+- Use the image description to inform your details.
+- Write the biography and first message using Gen Z slang.
+- Ensure the tone is exaggerated, sassy, hilarious, absurd, awkward, and sexy.
+- The biography should be in the third person, and address the protagonist as "you".
+- The first message must start with a narrative enclosed in asterisks (e.g., **narrative**) followed by direct speech.
+- Include only the valid JSON object in your response.
+
+### IMAGE DESCRIPTION:
+${imageDescription}
+
+### RESPONSE: `,
+      },
+    ],
+  };
+
+  const headers = {
+    Authorization:
+      "Bearer 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",
+    "Content-Type": "application/json",
+  };
+
+  try {
+    const responseCharacter = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      payloadCharacterCard,
+      { headers }
+    );
+    const characterMessage = responseCharacter.data.choices[0].message;
+    if (characterMessage && characterMessage.content) {
+      let content = characterMessage.content;
+      console.log("Character Card Content:", content);
+      // Extract JSON substring by finding the first '{' and the last '}'
+      const start = content.indexOf("{");
+      const end = content.lastIndexOf("}");
+      if (start !== -1 && end !== -1 && end > start) {
+        content = content.substring(start, end + 1);
+      }
+      try {
+        return JSON.parse(content);
+      } catch (e) {
+        console.error("Strict JSON parsing failed:", e.message);
+        try {
+          return JSON5.parse(content);
+        } catch (e2) {
+          console.error("JSON5 parsing also failed:", e2.message);
+        }
+      }
+    } else {
+      console.log("No character card content found in the response.");
+    }
+  } catch (error) {
+    console.error(
+      "Error in character card API call:",
+      error.response ? error.response.data : error.message
+    );
+  }
+
+  if (retryCount < 3) {
+    console.log("Retrying character card generation...");
+    return await generateCharacterCard(imageDescription, retryCount + 1);
+  } else {
+    console.error(
+      "Failed to generate a valid character card after multiple attempts."
+    );
+    return null;
+  }
+}
+
+// Main function to pick a random image from blob storage, get an image description, and generate a character card.
+async function generateData() {
+  const totalImages = 2270;
+  const randomNumber = Math.floor(Math.random() * totalImages) + 1;
+  const imageNumberStr = randomNumber.toString().padStart(4, "0");
+  const blobBaseUrl =
+    "https://metaversetestnetstorage.blob.core.windows.net/monster-girls/";
+  const imageUrl = `${blobBaseUrl}${imageNumberStr}.png`;
+
+  console.log("Selected image URL:", imageUrl);
+
+  try {
+    // Fetch the image from blob storage as a Blob.
+    const imageResponse = await axios.get(imageUrl, { responseType: "blob" });
+    const base64Image = await blobToBase64(imageResponse.data);
+
+    // First API call: Get a detailed image description.
+    const payloadDescription = {
+      model: "google/gemini-2.0-flash-lite-001",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a creative writer that helps to describe images (character, features of the character, race, visual appearance, pose, scenery, setting) in vivid detail. Provide 2-3 paragraphs.",
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "What's in this image?",
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: base64Image,
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const headers = {
+      Authorization:
+        "Bearer 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",
+      "Content-Type": "application/json",
+    };
+
+    const responseDescription = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      payloadDescription,
+      { headers }
+    );
+    const descriptionMessage = responseDescription.data.choices[0].message;
+    let imageDescription = "";
+    if (descriptionMessage && descriptionMessage.content) {
+      imageDescription = descriptionMessage.content;
+      console.log("Image Description:", imageDescription);
+    } else {
+      console.log("No image description found in the response.");
+      throw new Error("No image description found");
+    }
+
+    // Second API call: Generate the character card using the image description.
+    const characterCard = await generateCharacterCard(imageDescription);
+    if (characterCard) {
+      // Append the image URL to the character card.
+      characterCard.image = imageUrl;
+      return characterCard;
+    } else {
+      throw new Error("Failed to generate character card");
+    }
+  } catch (error) {
+    console.error("Error in generateData:", error);
+    throw error;
+  }
+}
+
+export default function Page() {
+  const [loading, setLoading] = useState(false);
+  const [characterData, setCharacterData] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+    setCharacterData(null);
+    try {
+      const data = await generateData();
+      setCharacterData(data);
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
+      <h1 className="text-3xl font-bold text-zinc-900 mb-4">Monster Girl Generator</h1>
+      <button
+        onClick={handleGenerate}
+        disabled={loading}
+        className="mb-4 px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+      >
+        {loading ? "Generating..." : "Generate"}
+      </button>
+      {error && (
+        <div className="mb-4 p-4 bg-red-200 text-red-800 rounded">
+          {error}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      )}
+      {characterData && (
+        <div className="w-full max-w-2xl bg-white p-6 rounded shadow">
+          <img
+            src={characterData.image}
+            alt="Random Monster Girl"
+            className="w-full h-auto mb-4 rounded"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <pre className="whitespace-pre-wrap text-gray-800">
+            {JSON.stringify(characterData, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
