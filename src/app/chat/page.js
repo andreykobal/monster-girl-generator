@@ -15,11 +15,11 @@ const characterData = {
     image: 'https://metaversetestnetstorage.blob.core.windows.net/generated-images/4728173c1cbb4098b939c9ae6933b426.png',
 };
 
-
 export default function Home() {
     const [messages, setMessages] = useState([]);
     const [chatInput, setChatInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [suggestions, setSuggestions] = useState([]); // Initialize suggestions state
 
     // Initialize chat with the hardcoded character data
     useEffect(() => {
@@ -34,10 +34,12 @@ export default function Home() {
         setMessages([systemMessage, characterFirstMessage]);
     }, []);
 
-    const handleSendMessage = async (e) => {
+    const handleSendMessage = async (e, userMessage) => {
         e.preventDefault();
-        if (!chatInput.trim()) return;
-        const newUserMessage = { role: 'user', content: chatInput.trim() };
+        if (!userMessage.trim()) return;
+
+        // Add user's message to chat
+        const newUserMessage = { role: 'user', content: userMessage.trim() };
         let updatedMessages = [...messages, newUserMessage];
         if (updatedMessages.length > 50) {
             updatedMessages = updatedMessages.slice(updatedMessages.length - 50);
@@ -55,23 +57,75 @@ export default function Home() {
                 body: JSON.stringify({
                     model: 'gpt-4o-2024-08-06',
                     messages: updatedMessages,
+                    response_format: {
+                        type: 'json_schema',
+                        json_schema: {
+                            name: 'roleplay_response',
+                            strict: true,
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    character_response: {
+                                        type: 'string',
+                                        description: 'The response of the character in roleplay.'
+                                    },
+                                    suggestions: {
+                                        type: 'array',
+                                        items: {
+                                            type: 'string',
+                                            description: 'Suggestions for how the user can respond.'
+                                        }
+                                    }
+                                },
+                                required: ['character_response', 'suggestions'],
+                                additionalProperties: false
+                            }
+                        }
+                    },
                 }),
             });
+
             if (!response.ok) {
                 throw new Error('Chat API call failed');
             }
+
             const result = await response.json();
+            console.log('API Response:', result);
+
             const message = result.choices[0].message;
-            let newMessages = [...updatedMessages, message];
-            if (newMessages.length > 50) {
-                newMessages = newMessages.slice(newMessages.length - 50);
+            const parsedMessage = JSON.parse(message.content); // Parse the content
+
+            console.log('Parsed Message:', parsedMessage);
+
+            const characterResponse = parsedMessage.character_response;
+            const suggestionsList = parsedMessage.suggestions;
+
+            console.log('Character Response:', characterResponse);
+            console.log('Suggestions:', suggestionsList);
+
+            if (!characterResponse || !suggestionsList) {
+                throw new Error('Missing character_response or suggestions.');
             }
+
+            let newMessages = [...updatedMessages, {
+                role: 'assistant',
+                content: characterResponse
+            }];
+
+            // Update suggestions state
+            setSuggestions(suggestionsList);
+
             setMessages(newMessages);
         } catch (error) {
             console.error('Error during chat:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSuggestionClick = (suggestion) => {
+        setChatInput(suggestion); // Set chatInput to the selected suggestion
+        handleSendMessage({ preventDefault: () => { } }, suggestion); // Send the message immediately
     };
 
     return (
@@ -105,9 +159,27 @@ export default function Home() {
                             </div>
                         ))}
                     </div>
+                    <div className="suggestions-container flex space-x-2 mt-4">
+                        {/* Display suggestions as buttons above the input field */}
+                        {suggestions.map((suggestion, index) => (
+                            <button
+                                key={index}
+                                onClick={() => handleSuggestionClick(suggestion)}
+                                className="btn-suggestion px-4 py-2 bg-blue-600 text-white rounded"
+                            >
+                                {suggestion}
+                            </button>
+                        ))}
+                    </div>
                     <div className="p-4 bg-black bg-opacity-50">
-                        <form onSubmit={handleSendMessage} className="flex">
-                            <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 text-black p-2 rounded-l" placeholder="Type your message..." />
+                        <form onSubmit={(e) => handleSendMessage(e, chatInput)} className="flex">
+                            <input
+                                type="text"
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                className="flex-1 text-black p-2 rounded-l"
+                                placeholder="Type your message..."
+                            />
                             <button type="submit" className="p-4 bg-violet-500 rounded-r">
                                 {loading ? <ImSpinner2 className="animate-spin h-5 w-5 text-white" /> : <FaPaperPlane className="text-white text-xl" />}
                             </button>
