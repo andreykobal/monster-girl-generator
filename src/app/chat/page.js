@@ -76,9 +76,13 @@ export default function Home() {
                                             type: 'string',
                                             description: 'short suggestions for how the user can respond in format dialogue + action enclosed in asterisks.'
                                         }
+                                    },
+                                    is_user_dead: {
+                                        type: 'boolean',
+                                        description: 'Indicates whether the user is dead.'
                                     }
                                 },
-                                required: ['character_response', 'suggestions'],
+                                required: ['character_response', 'suggestions', 'is_user_dead'],
                                 additionalProperties: false
                             }
                         }
@@ -96,6 +100,13 @@ export default function Home() {
 
             const characterResponse = parsedMessage.character_response;
             const suggestionsList = parsedMessage.suggestions;
+            const isUserDead = parsedMessage.is_user_dead;
+
+            if (isUserDead) {
+                alert('Game Over');  // Show alert if user is dead
+            }
+
+
 
             if (!characterResponse || !suggestionsList) {
                 throw new Error('Missing character_response or suggestions.');
