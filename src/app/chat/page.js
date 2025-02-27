@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FaPaperPlane, FaHome } from 'react-icons/fa';
 import { ImSpinner2 } from 'react-icons/im';
 import { useSearchParams } from 'next/navigation'; // Import for handling query params
+import Link from 'next/link';
 
 
 
@@ -276,13 +277,14 @@ export default function Home() {
     return (
         <>
             <div className="fixed top-4 left-4 z-50">
+                <Link href="/">
                 <button
-                    onClick={() => setMessages([])}
                     className="flex items-center space-x-2 px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
                 >
                     <FaHome className="text-xl" />
                     <span>Home</span>
                 </button>
+                </Link>
             </div>
             <div className="relative min-h-screen flex items-center justify-center">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 filter blur-3xl z-[-1]" />
