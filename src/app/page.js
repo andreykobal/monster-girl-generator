@@ -115,7 +115,7 @@ Using the provided image description, create a character card in JSON format.
   "race": "Character's race",
   "profession": "Character's profession",
   "bio": "A short biography (2-3 paragraphs) written in the third person. It should be exaggerated, sassy, hilarious, absurd, awkward, and sexy. Use Gen Z slang. Include a short description of character's appearance and personality.",
-  "first message": "A short roleplay starter (maximum 1 paragraph), random and absurd situation between the character and user, that begins with a narrative enclosed in asterisks (**) followed by direct speech. Use hero's journey, Gen Z slang, and humor. Address the user as 'you'."
+  "firstMessage": "A short roleplay starter (maximum 1 paragraph), random and absurd situation between the character and user, that begins with a narrative enclosed in asterisks (**) followed by direct speech. Use hero's journey, Gen Z slang, and humor. Address the user as 'you'."
 }
 \`\`\`
 
@@ -151,7 +151,7 @@ ${imageDescription}
       const parsedContent = parseCharacterCardFallback(content);
       if (parsedContent && Object.keys(parsedContent).length > 0) {
         // Check if any required field is missing
-        const requiredFields = ['name', 'age', 'race', 'profession', 'bio', 'first message'];
+        const requiredFields = ['name', 'age', 'race', 'profession', 'bio', 'firstMessage'];
         const missingFields = requiredFields.filter(field => !parsedContent[field]);
 
         if (missingFields.length > 0 && retryCount < 10) {
@@ -400,7 +400,7 @@ function MonsterGirlGenerator() {
           },
           {
             trait_type: "firstMessage",
-            value: characterData["first message"],
+            value: characterData.firstMessage,
           },
         ],
       };
@@ -550,7 +550,7 @@ function MonsterGirlGenerator() {
                   <p className="font-bold">Bio</p>
                   <p>{characterData.bio}</p>
                   <p className="font-bold">First Message</p>
-                  <p>{characterData["first message"]}</p>
+                  <p>{characterData.firstMessage}</p>
                 </div>
                 {characterData && (
                   <div className="flex w-full justify-center items-center">

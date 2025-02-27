@@ -165,7 +165,7 @@ export default function Chat({ characterData, onGameOver }) {  // Add onGameOver
         };
         const characterFirstMessage = {
             role: 'assistant',
-            content: characterData["first message"],
+            content: characterData.firstMessage,
         };
         setMessages([systemMessage, characterFirstMessage]);
     }, []);
