@@ -31,9 +31,102 @@ export default function Home() {
 
             return () => clearInterval(timer); // Cleanup timer on component unmount
         } else {
-            console.log('Messages after 20s countdown:', messages); // Log messages when timer ends
+            // Log and evaluate chat when the timer ends
+            evaluateChatHistory();
         }
-    }, [countdown, messages]); // Re-run the effect whenever countdown or messages change
+    }, [countdown, messages]); // Re-run effect whenever countdown or messages change
+
+    const evaluateChatHistory = async () => {
+        try {
+            console.log('Preparing evaluation message...');
+
+            // Define your schema for structured output
+            const evaluationMessage = {
+                role: 'system',
+                content: `Evaluate the following conversation using these metrics:
+            1. Technique of Execution (on a scale of 1 to 10)
+            2. Charisma and Confidence (on a scale of 1 to 10)
+            3. Creativity and Originality (on a scale of 1 to 10)
+            4. Emotional Intelligence (on a scale of 1 to 10)
+            Provide the evaluation in the following JSON format:
+            {
+                "message": "Roleplay character's thoughts on this conversation.",
+                "metrics": {
+                    "technique": number,
+                    "charisma": number,
+                    "creativity": number,
+                    "emotional_intelligence": number
+                }
+            }`
+            };
+
+            console.log('Updated messages:', messages); // Log the messages to see what we are sending
+            const updatedMessages = [...messages, evaluationMessage];
+
+            // Send the request for evaluation with structured output
+            console.log('Sending evaluation request...');
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-2024-08-06', // Ensure you're using the correct model
+                    messages: updatedMessages,
+                    response_format: {
+                        type: 'json_schema',
+                        json_schema: {
+                            name: 'evaluation_response',
+                            strict: true,
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    message: {
+                                        type: 'string',
+                                        description: 'The roleplay character’s thoughts on the conversation.'
+                                    },
+                                    metrics: {
+                                        type: 'object',
+                                        properties: {
+                                            technique: { type: 'number' },
+                                            charisma: { type: 'number' },
+                                            creativity: { type: 'number' },
+                                            emotional_intelligence: { type: 'number' },
+                                        },
+                                        required: ['technique', 'charisma', 'creativity', 'emotional_intelligence'],
+                                        additionalProperties: false  // Explicitly disallow additional properties
+                                    }
+                                },
+                                required: ['message', 'metrics'],
+                                additionalProperties: false
+                            }
+                        }
+                    },
+                }),
+            });
+
+            if (!response.ok) {
+                const errorResponse = await response.json();  // Get the detailed error
+                console.error('Failed to fetch from OpenAI:', errorResponse);
+                throw new Error('Evaluation API call failed');
+            }
+
+            const result = await response.json();
+            console.log('Evaluation result:', result); // Log the response from the API
+
+            const { message, metrics } = result.choices[0].message;
+
+            // Display the character's evaluation and metrics
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { role: 'assistant', content: message },
+                { role: 'assistant', content: JSON.stringify(metrics) },
+            ]);
+        } catch (error) {
+            console.error('Error during evaluation:', error); // Log the error message
+        }
+    };
 
 
     // Initialize chat with the hardcoded character data
