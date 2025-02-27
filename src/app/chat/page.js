@@ -13,8 +13,16 @@ export default function Parent() {
         image: 'https://metaversetestnetstorage.blob.core.windows.net/generated-images/4728173c1cbb4098b939c9ae6933b426.png',
     };
 
-    const handleGameOver = (gameOver) => {
-        alert(gameOver ? 'Game Over: You scored above 8!' : 'Game Over: Better luck next time!');
+    const handleGameOver = (gameOver, message, metrics) => {
+        alert(`
+            Game Over: ${gameOver ? 'You scored above 8!' : 'Better luck next time!'}
+            Evaluation Message: ${message}
+            Scores:
+            Technique: ${metrics.technique}
+            Charisma: ${metrics.charisma}
+            Creativity: ${metrics.creativity}
+            Emotional Intelligence: ${metrics.emotional_intelligence}
+        `);
     };
 
     return <Chat characterData={characterData} onGameOver={handleGameOver} />;

@@ -131,9 +131,9 @@ export default function Chat({ characterData, onGameOver }) {  // Add onGameOver
             const mean = Object.values(metrics).reduce((acc, value) => acc + value, 0) / 4;
             console.log('Average Score:', mean);
 
-            // Return the result to the parent
+            // Return the result to the parent, passing message, metrics, and mean score
             if (onGameOver) {
-                onGameOver(mean > 8);  // Pass true or false based on the mean
+                onGameOver(mean > 8, message, metrics);  // Pass true/false, message, and metrics
             }
         } catch (error) {
             console.error('Error during evaluation:', error); // Log the error message
