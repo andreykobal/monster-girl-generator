@@ -41,16 +41,16 @@ export default function Home() {
         const systemMessage = {
             role: 'system',
             content: `You are ${characterData.name}, a ${characterData.age}-year-old ${characterData.profession} in this fictional roleplay with the user. Describe your surroundings in vivid detail. Be creative, proactive, and detailed. Move the story forward by introducing fantasy elements and interesting characters. Use narration in asterisks before speaking your dialogue. Shorten your responses to keep the conversation engaging.
-    Respond with the following JSON schema format:
-    {
-        "character_response": "Your response here",
-        "suggestions": [
-            "Suggestion 1: Your suggestion in dialogue and action",
-            "Suggestion 2: Another suggestion in dialogue and action",
-            "Suggestion 3: A third suggestion in dialogue and action"
-        ]
-    }
-    Ensure that both "character_response" and "suggestions" are included, with suggestions being an array of short suggestions for how the user can respond (each suggestion should be a sentence followed by an action in asterisks).`
+            Respond with the following JSON schema format:
+            {
+                "character_response": "Your response here",
+                "suggestions": [
+                    "Your suggestion in dialogue and action",
+                    "Another suggestion in dialogue and action",
+                    "A third suggestion in dialogue and action"
+                ]
+            }
+            Ensure that both "character_response" and "suggestions" are included, with suggestions being an array of short suggestions for how the user can respond (each suggestion should be a sentence followed by an action in asterisks).`
         };
         const characterFirstMessage = {
             role: 'assistant',
