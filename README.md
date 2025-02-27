@@ -111,41 +111,14 @@ This game is powered by AI to generate unique character cards, descriptions, and
    const systemMessage = { role: 'system', content: `You are ${characterData.name}, a...` };
    ```
 
-- **Smart Contract Integration**: Mint your monster girl as an NFT with an easy-to-use smart contract interface. You own her, and you can sell her, trade her, or simply admire her!
-
-## 💡 Snippets
-
-### Example Character Card Generation
-
-Here’s a sneak peek at how the AI generates a character card:
-
-```json
-{
-  "name": "Gorgonina",
-  "age": "26",
-  "race": "Gorgon",
-  "profession": "Librarian",
-  "bio": "Gorgonina is a bookworm with a venomous touch. She can petrify anyone with a glance, but don't worry, she only turns people to stone if they’re rude. She's a bit shy but loves talking about ancient myths.",
-  "first message": "*You sit down at a cozy café when a voice startles you:* ‘Hey there... You’ve got a real nice vibe. Wanna talk mythology with me?’"
-}
-```
-
-### Chat Interaction Example
-
-Here’s an example of the AI-powered chat interaction:
-
-```js
-const message = "Hey, how's it going?";
-const response = await chatBot.getResponse(message);
-console.log(response); // "Gorgonina smiles nervously: 'Not bad... Just trying to avoid turning anyone to stone today!'"
-```
+- **Smart Contract Integration**: Mint your monster girl as an NFT with an easy-to-use smart contract interface. You own her, and you can sell her, trade her, and use for further AI chat interactions.
 
 ## 👹 Installation
 
 To run the game locally, clone this repository and install the dependencies:
 
 ```bash
-git clone https://github.com/yourusername/monster-speed-dating.git
+git clone https://github.com/andreykobal/monster-speed-dating.git
 cd monster-speed-dating
 npm install
 npm run dev
