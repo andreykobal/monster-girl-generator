@@ -93,7 +93,7 @@ function parseCharacterCardFallback(str) {
 // Generate the character card using an API (with retry logic).
 async function generateCharacterCard(imageDescription, retryCount = 0) {
   const payloadCharacterCard = {
-    model: "sao10k/l3.1-70b-hanami-x1",
+    model: "sao10k/l3.3-euryale-70b",
     max_tokens: 1024,
     messages: [
       {
