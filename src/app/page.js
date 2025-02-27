@@ -119,14 +119,6 @@ Using the provided image description, create a character card in JSON format.
 }
 \`\`\`
 
-### Instructions:
-- Use the image description to inform your details.
-- Write the biography and first message using Gen Z slang.
-- Ensure the tone is exaggerated, sassy, hilarious, absurd, awkward, and sexy.
-- The biography should be in the third person, and address the protagonist as "you".
-- The first message must start with a narrative enclosed in asterisks (e.g., **narrative**) followed by direct speech.
-- Include only the valid JSON object in your response.
-
 ### IMAGE DESCRIPTION:
 ${imageDescription}
 
@@ -151,7 +143,6 @@ ${imageDescription}
     if (characterMessage && characterMessage.content) {
       let content = characterMessage.content;
       console.log("Character Card Content:", content);
-      // Extract JSON substring by finding the first '{' and the last '}'
       const start = content.indexOf("{");
       const end = content.lastIndexOf("}");
       if (start !== -1 && end !== -1 && end > start) {
@@ -159,6 +150,15 @@ ${imageDescription}
       }
       const parsedContent = parseCharacterCardFallback(content);
       if (parsedContent && Object.keys(parsedContent).length > 0) {
+        // Check if any required field is missing
+        const requiredFields = ['name', 'age', 'race', 'profession', 'bio', 'first message'];
+        const missingFields = requiredFields.filter(field => !parsedContent[field]);
+
+        if (missingFields.length > 0 && retryCount < 10) {
+          console.log(`Missing fields: ${missingFields.join(", ")}. Retrying...`);
+          return await generateCharacterCard(imageDescription, retryCount + 1); // Retry if fields are missing
+        }
+
         console.log("Fallback parsing succeeded.");
         return parsedContent;
       } else {
@@ -184,6 +184,7 @@ ${imageDescription}
     return null;
   }
 }
+
 
 // New Helper: Upload converted image to Pinata.
 async function uploadImageToPinata(imageFile) {
