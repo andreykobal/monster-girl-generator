@@ -21,7 +21,7 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]); // Initialize suggestions state
     const chatContainerRef = useRef(null); // Reference for the chat container
-    const [countdown, setCountdown] = useState(20); // Initialize the countdown timer state
+    const [countdown, setCountdown] = useState(30); // Initialize the countdown timer state
 
     useEffect(() => {
         if (countdown > 0) {
@@ -53,7 +53,7 @@ export default function Home() {
             // Define your schema for structured output
             const evaluationMessage = {
                 role: 'system',
-                content: `Evaluate the performance of user in following conversation using these metrics:
+                content: `Evaluate the performance of user in speed dating with you, to decide if you want to give your number, in following conversation using these metrics:
             1. Technique of Execution (on a scale of 1 to 10)
             2. Charisma and Confidence (on a scale of 1 to 10)
             3. Creativity and Originality (on a scale of 1 to 10)
@@ -146,17 +146,21 @@ export default function Home() {
     useEffect(() => {
         const systemMessage = {
             role: 'system',
-            content: `You are ${characterData.name}, a ${characterData.age}-year-old ${characterData.profession} in this fictional roleplay with the user. Describe your surroundings in vivid detail. Be creative, proactive, and detailed. Move the story forward by introducing fantasy elements and interesting characters. Use narration in asterisks before speaking your dialogue. Shorten your responses to keep the conversation engaging.
+            content: `You are ${characterData.name}, a ${characterData.age}-year-old ${characterData.race}, who is ${characterData.profession}, in this fictional speed-dating roleplay with the user. Describe your surroundings in vivid detail. Be creative, proactive, and detailed. Move the story forward by introducing fantasy elements and interesting characters. Use narration in asterisks before speaking your dialogue. Shorten your responses to keep the conversation engaging.
             Respond with the following JSON schema format:
             {
-                "character_response": "Your response here",
+                "character_response": "Your short response here",
                 "suggestions": [
                     "Your suggestion in dialogue and action",
                     "Another suggestion in dialogue and action",
                     "A third suggestion in dialogue and action"
                 ]
             }
-            Ensure that both "character_response" and "suggestions" are included, with suggestions being an array of short suggestions for how the user can respond (each suggestion should be a sentence followed by an action in asterisks).`
+            Ensure that both "character_response" and "suggestions" are included, with suggestions being an array of short suggestions for how the user can respond (each suggestion should be a sentence followed by an action in asterisks).
+            
+            Your bio:
+            ${characterData.bio}
+            `
         };
         const characterFirstMessage = {
             role: 'assistant',
