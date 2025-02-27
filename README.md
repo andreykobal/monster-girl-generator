@@ -5,8 +5,9 @@ Welcome to **Monster Speed Dating**, where you get the chance to date unique mon
 ![Create-Next-App-02-27-2025_06_27_PM](https://github.com/user-attachments/assets/7420f7a3-f29b-4cd8-a4ac-54537f67925c)
 
 ## ✅ Demo
-[PLAY NOW]
-[WATCH DEMO VIDEO]
+
+#### [👉 WATCH DEMO VIDEO 👈](https://youtube.com)
+#### [👉 PLAY NOW 👈](https://monster-girl-generator.vercel.app/)
 
 ## 🚀 Game Concept
 
@@ -70,15 +71,45 @@ This game is powered by AI to generate unique character cards, descriptions, and
 
 ## 🤖 AI Features
 
-- **Character Generation**: Powered by AI, each monster girl is unique, with a generated backstory, personality traits, and a starting conversation.
-- **Image Description**: The AI analyzes the image to create a detailed description of the character, ensuring that each interaction feels immersive and dynamic.
-  
-  ```js
-  const payloadDescription = {
-    model: "google/gemini-2.0-flash-lite-001",
-    messages: [{ role: "user", content: "What's in this image?" }]
-  };
-  ```
+1. **Character Card Generation**:
+   The character card is generated using AI with details like name, age, race, profession, bio, and first message. This is done by sending the image description to OpenRouter API.
+
+   ```js
+   const characterCard = await generateCharacterCard(imageDescription);
+   ```
+
+2. **Image Description**:
+   AI analyzes the random image, providing a vivid, detailed description of the monster girl's features, race, and personality, which helps create a rich narrative.
+
+   ```js
+   const responseDescription = await axios.post(
+     "https://openrouter.ai/api/v1/chat/completions", 
+     payloadDescription, { headers }
+   );
+   ```
+
+3. **Chat Evaluation**:
+   After the speed dating chat, AI evaluates the user's performance based on metrics like technique, charisma, creativity, and emotional intelligence. This feedback is structured in JSON format.
+
+   ```js
+   const evaluationMessage = { role: 'system', content: 'Evaluate the conversation...' };
+   const evaluationResponse = await fetch('https://api.openai.com/v1/chat/completions', { body: evaluationMessage });
+   ```
+
+4. **Roleplay Dialogue**:
+   The character’s responses in the chat are powered by AI. It uses previous messages to generate engaging dialogues and offers suggestions for the player’s next move.
+
+   ```js
+   const response = await fetch('https://api.openai.com/v1/chat/completions', { body: updatedMessages });
+   const parsedMessage = JSON.parse(response.choices[0].message.content);
+   ```
+
+5. **Character Background**:
+   AI uses structured prompts to craft unique character backgrounds and scenarios. This ensures each encounter feels fresh and dynamic.
+
+   ```js
+   const systemMessage = { role: 'system', content: `You are ${characterData.name}, a...` };
+   ```
 
 - **Smart Contract Integration**: Mint your monster girl as an NFT with an easy-to-use smart contract interface. You own her, and you can sell her, trade her, or simply admire her!
 
@@ -121,4 +152,12 @@ npm run dev
 ```
 
 Make sure to have your **Pinata API keys** and **OpenRouter API keys** ready for the character generation and image uploads.
+
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+### Contribute
+
+We welcome contributions! To get started, fork the repository, make your changes, and submit a pull request. Please ensure your code follows the existing style and includes tests where applicable.
 
