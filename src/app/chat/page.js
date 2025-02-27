@@ -36,14 +36,24 @@ export default function Home() {
         }
     }, [countdown, messages]); // Re-run effect whenever countdown or messages change
 
+    // Inside your component
+    const evaluationTriggeredRef = useRef(false);  // Ref to track if evaluation has been triggered
+
     const evaluateChatHistory = async () => {
+        if (evaluationTriggeredRef.current) {
+            console.log("Evaluation already triggered, skipping...");
+            return;  // Prevent the evaluation if it's already triggered
+        }
+
+        evaluationTriggeredRef.current = true;  // Set the flag to true, indicating evaluation is in progress
+
         try {
             console.log('Preparing evaluation message...');
 
             // Define your schema for structured output
             const evaluationMessage = {
                 role: 'system',
-                content: `Evaluate the following conversation using these metrics:
+                content: `Evaluate the performance of user in following conversation using these metrics:
             1. Technique of Execution (on a scale of 1 to 10)
             2. Charisma and Confidence (on a scale of 1 to 10)
             3. Creativity and Originality (on a scale of 1 to 10)
@@ -115,9 +125,10 @@ export default function Home() {
             const result = await response.json();
             console.log('Evaluation result:', result); // Log the response from the API
 
-            const { message, metrics } = result.choices[0].message;
+            // Parse the message content from the result
+            const { message, metrics } = JSON.parse(result.choices[0].message.content);
 
-            // Display the character's evaluation and metrics
+            // Add the evaluation result to the chat
             setMessages((prevMessages) => [
                 ...prevMessages,
                 { role: 'assistant', content: message },
@@ -127,6 +138,8 @@ export default function Home() {
             console.error('Error during evaluation:', error); // Log the error message
         }
     };
+
+
 
 
     // Initialize chat with the hardcoded character data
