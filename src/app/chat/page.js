@@ -3,17 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { FaPaperPlane, FaHome } from 'react-icons/fa';
 import { ImSpinner2 } from 'react-icons/im';
+import { useSearchParams } from 'next/navigation'; // Import for handling query params
 
-// Hardcoded character data
-const characterData = {
-    name: 'Eliza',
-    age: 30,
-    profession: 'Arcane Technomancer',
-    race: 'Human',
-    bio: 'Eliza is an Arcane Technomancer, a master of blending ancient magic with cutting-edge technology. She roams the realms, seeking to unlock forgotten secrets and forge new paths in the ever-evolving balance between magic and machine.',
-    firstMessage: '*The air crackles with ethereal energy as Eliza adjusts the glowing device in front of her, her fingers dancing over intricate runes. She looks up, her eyes gleaming with knowledge and curiosity.* "Ah, a new adventurer steps forth into the unknown. Welcome! You’ve arrived just in time to witness the merging of magic and technology. Will you join me in this grand quest?"',
-    image: 'https://metaversetestnetstorage.blob.core.windows.net/generated-images/4728173c1cbb4098b939c9ae6933b426.png',
-};
+
 
 export default function Home() {
     const [messages, setMessages] = useState([]);
@@ -22,6 +14,19 @@ export default function Home() {
     const [suggestions, setSuggestions] = useState([]); // Initialize suggestions state
     const chatContainerRef = useRef(null); // Reference for the chat container
     const [countdown, setCountdown] = useState(30); // Initialize the countdown timer state
+
+    // Inside the Home component, replace the hardcoded character data
+    const searchParams = useSearchParams();
+    const characterData = {
+        name: searchParams.get('name') || 'Eliza',
+        age: parseInt(searchParams.get('age')) || 30,
+        profession: searchParams.get('profession') || 'Arcane Technomancer',
+        race: searchParams.get('race') || 'Human',
+        bio: searchParams.get('bio') || 'Eliza is an Arcane Technomancer...',
+        firstMessage: searchParams.get('firstMessage') || '*The air crackles with ethereal energy...*',
+        image: searchParams.get('image') || 'https://metaversetestnetstorage.blob.core.windows.net/generated-images/4728173c1cbb4098b939c9ae6933b426.png',
+    };
+
 
     useEffect(() => {
         if (countdown > 0) {
@@ -253,8 +258,10 @@ export default function Home() {
 
     const handleSuggestionClick = (suggestion) => {
         setChatInput(suggestion); // Set chatInput to the selected suggestion
+        setSuggestions([]); // Clear the suggestions from the UI
         handleSendMessage({ preventDefault: () => { } }, suggestion); // Send the message immediately
     };
+
 
     // Scroll to the bottom of the chat container whenever messages change
     useEffect(() => {
@@ -300,13 +307,13 @@ export default function Home() {
                             </div>
                         ))}
                     </div>
-                    <div className="suggestions-container flex space-x-2 mt-4">
+                    <div className="suggestions-container flex flex-col px-4 space-y-1 mt-4 mb-1">
                         {/* Display suggestions as buttons above the input field */}
                         {suggestions.map((suggestion, index) => (
                             <button
                                 key={index}
                                 onClick={() => handleSuggestionClick(suggestion)}
-                                className="btn-suggestion px-2 py-1 bg-blue-600 text-white rounded text-xs"
+                                className="btn-suggestion px-2 py-1 bg-zinc-900 bg-opacity-50 backdrop-blur text-white rounded text-xs"
                             >
                                 {suggestion}
                             </button>

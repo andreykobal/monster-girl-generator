@@ -430,13 +430,13 @@ function MonsterGirlGenerator() {
           Monster Girl Generator
         </h1>
         {!loading && (
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 glow-on-hover"
-        > 
-          Generate Monster Girl
-        </button>
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 glow-on-hover"
+          >
+            Generate Monster Girl
+          </button>
         )}
         {loading && <TypingEffect />}
         {error && (
@@ -469,15 +469,37 @@ function MonsterGirlGenerator() {
                   <p className="font-bold">First Message</p>
                   <p>{characterData["first message"]}</p>
                 </div>
-                <div className="flex w-full justify-center items-center">
-                <button
-                  onClick={handleMint}
-                  disabled={minting}
-                  className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
-                >
-                  {minting ? "Minting..." : "Mint Monster Girl"}
-                </button>
-                </div>
+                {characterData && (
+                  <div className="flex w-full justify-center items-center">
+                    <button
+                      onClick={handleMint}
+                      disabled={minting}
+                      className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
+                    >
+                      {minting ? "Minting..." : "Mint Monster Girl"}
+                    </button>
+
+                    {/* Chat Now Button */}
+                    <button
+                      onClick={() => {
+                        const searchParams = new URLSearchParams({
+                          name: characterData.name,
+                          age: characterData.age,
+                          profession: characterData.profession,
+                          race: characterData.race,
+                          bio: characterData.bio,
+                          firstMessage: characterData["first message"],
+                          image: characterData.azureImageUrl, // Image from Azure URL
+                        });
+                        const chatUrl = `/chat?${searchParams.toString()}`;
+                        window.location.href = chatUrl;
+                      }}
+                      className="mb-4 mt-4 ml-4 px-8 py-4 bg-blue-600 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-blue-500"
+                    >
+                      Chat Now
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
