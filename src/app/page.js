@@ -19,6 +19,7 @@ import { PinataSDK } from "pinata-web3";
 import imageCompression from "browser-image-compression"; // Use browser-image-compression
 
 import TypingEffect from "./TypingEffect";
+import Chat from "./chat/Chat";
 
 // Load your custom font.
 const gothicByte = localFont({
@@ -335,6 +336,8 @@ function MonsterGirlGenerator() {
 
   // useWriteContract hook to call the contract's createToken function.
   const { writeContractAsync: mintToken } = useWriteContract();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   // Handler to generate a monster girl.
   const handleGenerate = async () => {
@@ -410,6 +413,37 @@ function MonsterGirlGenerator() {
     }
   };
 
+  const Modal = ({ isOpen, onClose, characterData }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div
+        className="fixed inset-0 z-10 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center"
+      >
+          <Chat characterData={characterData} />
+          <div className="bg-zinc-900 p-16 rounded-xl text-center">
+            <h2 className="text-3xl font-mono font-bold">Success! 🎉</h2>
+          <button
+            onClick={handleMint}
+            disabled={minting}
+            className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
+          >
+            {minting ? "Minting..." : "Mint Monster Girl"}
+          </button>
+          </div>
+        <div className="bg-zinc-900 p-16 rounded-xl text-center">
+          <h2 className="text-3xl font-mono font-bold">Game over! ☠️</h2>
+          <button
+            onClick={() => setIsModalOpen(false)}
+            className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative min-h-screen flex flex-col items-center p-4 w-full pt-8">
       <video
@@ -481,19 +515,7 @@ function MonsterGirlGenerator() {
 
                     {/* Chat Now Button */}
                     <button
-                      onClick={() => {
-                        const searchParams = new URLSearchParams({
-                          name: characterData.name,
-                          age: characterData.age,
-                          profession: characterData.profession,
-                          race: characterData.race,
-                          bio: characterData.bio,
-                          firstMessage: characterData["first message"],
-                          image: characterData.azureImageUrl, // Image from Azure URL
-                        });
-                        const chatUrl = `/chat?${searchParams.toString()}`;
-                        window.location.href = chatUrl;
-                      }}
+                      onClick={() => setIsModalOpen(true)}
                       className="mb-4 mt-4 ml-4 px-8 py-4 bg-blue-600 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-blue-500"
                     >
                       Chat Now
@@ -505,9 +527,16 @@ function MonsterGirlGenerator() {
           </div>
         )}
       </div>
+      {isModalOpen && (
+        <Modal
+          isOpen={isModalOpen}
+          characterData={characterData}
+        />
+      )}
     </div>
   );
 }
+
 
 // -----------------------------------------------------------------------------
 // APP COMPONENT WRAPPED WITH PROVIDERS
