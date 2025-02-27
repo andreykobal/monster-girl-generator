@@ -1,5 +1,7 @@
 # Monster Speed Dating: Get Her Number or Die
 
+### AI-powered dating simulator game
+
 Welcome to **Monster Speed Dating**, where you get the chance to date unique monster girls... but you better impress them fast! In this thrilling AI-driven dating simulator, your goal is to win the heart (or at least get the number) of a monster girl before time runs out. It's a race against the clock, and if you fail? Well, let's just say things can get pretty monstrous... 👹
 
 ![Create-Next-App-02-27-2025_06_27_PM](https://github.com/user-attachments/assets/7420f7a3-f29b-4cd8-a4ac-54537f67925c)
