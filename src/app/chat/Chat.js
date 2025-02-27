@@ -12,7 +12,7 @@ export default function Chat({ characterData, onGameOver }) {  // Add onGameOver
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState([]); // Initialize suggestions state
     const chatContainerRef = useRef(null); // Reference for the chat container
-    const [countdown, setCountdown] = useState(30); // Initialize the countdown timer state
+    const [countdown, setCountdown] = useState(180); // Initialize the countdown timer state
 
 
     useEffect(() => {

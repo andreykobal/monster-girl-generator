@@ -346,6 +346,7 @@ function MonsterGirlGenerator() {
     emotional_intelligence: 0,
   });
   const [message, setMessage] = useState('');
+  const [characterCreated, setCharacterCreated] = useState(false);
 
 
 
@@ -356,6 +357,7 @@ function MonsterGirlGenerator() {
     try {
       const data = await generateData();
       setCharacterData(data);
+      setCharacterCreated(true);
     } catch (err) {
       setError(err.message || "An error occurred");
     } finally {
@@ -415,6 +417,7 @@ function MonsterGirlGenerator() {
       });
       console.log("Mint transaction hash:", txHash);
       alert("Mint successful! Transaction hash: " + txHash);
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Error minting token:", error);
       alert("Mint failed: " + error.message);
@@ -428,7 +431,21 @@ function MonsterGirlGenerator() {
     setGameOver(gameOver);
     setMessage(message);
     setMetrics(metrics);
+    setCharacterCreated(false);
   };
+
+  const handlePlayNow = () => {
+    setIsModalOpen(true);
+    setShowChat(true);
+    setGameOver(null);
+    setMessage('');
+    setMetrics({
+      technique: 0,
+      charisma: 0,
+      creativity: 0,
+      emotional_intelligence: 0,
+    });
+  }
 
   const Modal = ({ isOpen, onClose, characterData }) => {
     if (!isOpen) return null;
@@ -443,11 +460,11 @@ function MonsterGirlGenerator() {
             onGameOver={handleGameOver}
           />
           ) : (
-            <div className="bg-zinc-900 p-16 rounded-xl text-center max-w-3xl">
+            <div className="bg-zinc-950 bg-opacity-80 p-16 rounded-xl text-center max-w-3xl font-mono">
               <h2 className="text-3xl font-mono font-bold">
                   {gameOver ? "Success! 🎉" : "You died! ☠️"}
               </h2>
-              <p>{characterData.name}: {message}</p>
+              <p className="my-4 italic"><b>{characterData.name}:</b> {message}</p>
               <p>Technique: {metrics.technique}</p>
               <p>Charisma: {metrics.charisma}</p>
               <p>Creativity: {metrics.creativity}</p>
@@ -458,7 +475,7 @@ function MonsterGirlGenerator() {
                     disabled={minting}
                     className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
                   >
-                    {minting ? "Minting..." : "Mint Monster"}
+                    {minting ? "Minting..." : "Claim Reward"}
                   </button>
               ) : (
                     <button
@@ -509,7 +526,7 @@ function MonsterGirlGenerator() {
             {error}
           </div>
         )}
-        {characterData && (
+        {characterData && characterCreated && (
           <div className="mt-4 w-full max-w-5xl bg-zinc-950 bg-opacity-80 backdrop-blur-lg p-6 rounded-xl shadow-lg">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2">
@@ -546,7 +563,7 @@ function MonsterGirlGenerator() {
 
                     {/* Chat Now Button */}
                     <button
-                      onClick={() => setIsModalOpen(true)}
+                      onClick={() => handlePlayNow()}
                       className="mb-4 mt-4 ml-4 px-8 py-4 bg-zinc-900 shadow-lg shadow-violet-500/50 border-2 border-violet-500 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800"
                     >
                       Play Now
