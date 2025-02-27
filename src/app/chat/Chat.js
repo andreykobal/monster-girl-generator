@@ -270,53 +270,53 @@ export default function Chat({ characterData, onGameOver }) {  // Add onGameOver
     }, [messages]);
 
     return (
-                <div style={{ backgroundImage: `url(${characterData.image})` }} className="w-full max-w-[500px] h-screen bg-cover bg-center mx-auto relative flex flex-col">
-                    <header className="flex flex-col p-4 bg-black bg-opacity-50">
-                        <div className="flex items-center w-full">
-                            <img src={characterData.image} alt="Avatar" className="w-10 h-10 rounded-full object-cover object-top mr-4" />
-                            <div>
-                                <h1 className="text-white text-xl font-bold">{characterData.name}</h1>
-                            </div>
-                            <div className="countdown-timer text-white p-2">
-                                Time remaining: {countdown}s
-                            </div>
-                        </div>
-                    </header>
-                    <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef} id="chat-container">
-                        {messages.filter((msg) => msg.role !== 'system').map((msg, idx) => (
-                            <div key={idx} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                                <span className={`inline-block max-w-[80%] p-2 rounded-xl bg-opacity-80 backdrop-blur-xl ${msg.role === 'user' ? 'bg-purple-600 text-white' : 'bg-neutral-900 text-white'}`}>
-                                    {msg.content}
-                                </span>
-                            </div>
-                        ))}
+        <div style={{ backgroundImage: `url(${characterData.azureImageUrl})` }} className="w-full max-w-[500px] h-screen bg-cover bg-center mx-auto relative flex flex-col">
+            <header className="flex flex-col p-4 bg-black bg-opacity-50">
+                <div className="flex items-center w-full">
+                    <img src={characterData.azureImageUrl} alt="Avatar" className="w-10 h-10 rounded-full object-cover object-top mr-4" />
+                    <div>
+                        <h1 className="text-white text-xl font-bold">{characterData.name}</h1>
                     </div>
-                    <div className="suggestions-container flex flex-col px-4 space-y-1 mt-4 mb-1">
-                        {/* Display suggestions as buttons above the input field */}
-                        {suggestions.map((suggestion, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleSuggestionClick(suggestion)}
-                                className="btn-suggestion px-2 py-1 bg-zinc-900 bg-opacity-50 backdrop-blur text-white rounded text-xs"
-                            >
-                                {suggestion}
-                            </button>
-                        ))}
-                    </div>
-                    <div className="p-4 bg-black bg-opacity-50">
-                        <form onSubmit={(e) => handleSendMessage(e, chatInput)} className="flex">
-                            <input
-                                type="text"
-                                value={chatInput}
-                                onChange={(e) => setChatInput(e.target.value)}
-                                className="flex-1 text-black p-2 rounded-l"
-                                placeholder="Type your message..."
-                            />
-                            <button type="submit" className="p-4 bg-violet-500 rounded-r">
-                                {loading ? <ImSpinner2 className="animate-spin h-5 w-5 text-white" /> : <FaPaperPlane className="text-white text-xl" />}
-                            </button>
-                        </form>
+                    <div className="countdown-timer text-white p-2">
+                        Time remaining: {countdown}s
                     </div>
                 </div>
+            </header>
+            <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef} id="chat-container">
+                {messages.filter((msg) => msg.role !== 'system').map((msg, idx) => (
+                    <div key={idx} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                        <span className={`inline-block max-w-[80%] p-2 rounded-xl bg-opacity-80 backdrop-blur-xl ${msg.role === 'user' ? 'bg-purple-600 text-white' : 'bg-neutral-900 text-white'}`}>
+                            {msg.content}
+                        </span>
+                    </div>
+                ))}
+            </div>
+            <div className="suggestions-container flex flex-col px-4 space-y-1 mt-4 mb-1">
+                {/* Display suggestions as buttons above the input field */}
+                {suggestions.map((suggestion, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="btn-suggestion px-2 py-1 bg-zinc-900 bg-opacity-50 backdrop-blur text-white rounded text-xs"
+                    >
+                        {suggestion}
+                    </button>
+                ))}
+            </div>
+            <div className="p-4 bg-black bg-opacity-50">
+                <form onSubmit={(e) => handleSendMessage(e, chatInput)} className="flex">
+                    <input
+                        type="text"
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        className="flex-1 text-black p-2 rounded-l"
+                        placeholder="Type your message..."
+                    />
+                    <button type="submit" className="p-4 bg-violet-500 rounded-r">
+                        {loading ? <ImSpinner2 className="animate-spin h-5 w-5 text-white" /> : <FaPaperPlane className="text-white text-xl" />}
+                    </button>
+                </form>
+            </div>
+        </div>
     );
 }

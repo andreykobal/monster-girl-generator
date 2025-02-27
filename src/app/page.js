@@ -204,11 +204,11 @@ async function uploadImageToPinata(imageFile) {
 // Generate monster girl data by fetching a random image, converting it, getting its description,
 // and then generating a character card.
 async function generateData() {
-  const totalImages = 2270;
+  const totalImages = 1975;
   const randomNumber = Math.floor(Math.random() * totalImages) + 1;
   const imageNumberStr = randomNumber.toString().padStart(4, "0");
   const blobBaseUrl =
-    "https://metaversetestnetstorage.blob.core.windows.net/monster-girls/";
+    "https://metaversetestnetstorage.blob.core.windows.net/monster-girls-new/";
   const imageUrl = `${blobBaseUrl}${imageNumberStr}.png`;  // Use Azure image URL
 
   console.log("Selected image URL:", imageUrl);
@@ -438,7 +438,10 @@ function MonsterGirlGenerator() {
         className="fixed inset-0 z-10 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center"
       >
           {showChat ? (
-            <Chat characterData={characterData} onGameOver={handleGameOver} />
+          <Chat
+            characterData={{ ...characterData }}
+            onGameOver={handleGameOver}
+          />
           ) : (
             <div className="bg-zinc-900 p-16 rounded-xl text-center max-w-3xl">
               <h2 className="text-3xl font-mono font-bold">
@@ -455,7 +458,7 @@ function MonsterGirlGenerator() {
                     disabled={minting}
                     className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
                   >
-                    {minting ? "Minting..." : "Mint Monster Girl"}
+                    {minting ? "Minting..." : "Mint Monster"}
                   </button>
               ) : (
                     <button
@@ -497,7 +500,7 @@ function MonsterGirlGenerator() {
             disabled={loading}
             className="px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 glow-on-hover"
           >
-            Create Monster Girl
+            Create Monster
           </button>
         )}
         {loading && <TypingEffect />}
