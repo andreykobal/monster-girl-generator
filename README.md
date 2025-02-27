@@ -1,4 +1,4 @@
-# Monster Speed Dating: Get Her Number or Die 💀💘
+# Monster Speed Dating: Get Her Number or Die
 
 Welcome to **Monster Speed Dating**, where you get the chance to date unique monster girls... but you better impress them fast! In this thrilling AI-driven dating simulator, your goal is to win the heart (or at least get the number) of a monster girl before time runs out. It's a race against the clock, and if you fail? Well, let's just say things can get pretty monstrous... 👹
 
