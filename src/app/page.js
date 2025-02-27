@@ -337,6 +337,16 @@ function MonsterGirlGenerator() {
   // useWriteContract hook to call the contract's createToken function.
   const { writeContractAsync: mintToken } = useWriteContract();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showChat, setShowChat] = useState(true); // Initially show the chat
+  const [gameOver, setGameOver] = useState(null); // `null` initially, can be true or false later
+  const [metrics, setMetrics] = useState({
+    technique: 0,
+    charisma: 0,
+    creativity: 0,
+    emotional_intelligence: 0,
+  });
+  const [message, setMessage] = useState('');
+
 
 
   // Handler to generate a monster girl.
@@ -413,6 +423,13 @@ function MonsterGirlGenerator() {
     }
   };
 
+  const handleGameOver = (gameOver, message, metrics) => {
+    setShowChat(false); // Hide chat when game over event occurs
+    setGameOver(gameOver);
+    setMessage(message);
+    setMetrics(metrics);
+  };
+
   const Modal = ({ isOpen, onClose, characterData }) => {
     if (!isOpen) return null;
 
@@ -420,29 +437,40 @@ function MonsterGirlGenerator() {
       <div
         className="fixed inset-0 z-10 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center"
       >
-          <Chat characterData={characterData} />
-          <div className="bg-zinc-900 p-16 rounded-xl text-center">
-            <h2 className="text-3xl font-mono font-bold">Success! 🎉</h2>
-          <button
-            onClick={handleMint}
-            disabled={minting}
-            className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
-          >
-            {minting ? "Minting..." : "Mint Monster Girl"}
-          </button>
-          </div>
-        <div className="bg-zinc-900 p-16 rounded-xl text-center">
-          <h2 className="text-3xl font-mono font-bold">Game over! ☠️</h2>
-          <button
-            onClick={() => setIsModalOpen(false)}
-            className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
-          >
-            Close
-          </button>
+          {showChat ? (
+            <Chat characterData={characterData} onGameOver={handleGameOver} />
+          ) : (
+            <div className="bg-zinc-900 p-16 rounded-xl text-center max-w-3xl">
+              <h2 className="text-3xl font-mono font-bold">
+                  {gameOver ? "Success! 🎉" : "You died! ☠️"}
+              </h2>
+              <p>{characterData.name}: {message}</p>
+              <p>Technique: {metrics.technique}</p>
+              <p>Charisma: {metrics.charisma}</p>
+              <p>Creativity: {metrics.creativity}</p>
+              <p>Emotional Intelligence: {metrics.emotional_intelligence}</p>
+              {gameOver ? (
+                  <button
+                    onClick={handleMint}
+                    disabled={minting}
+                    className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
+                  >
+                    {minting ? "Minting..." : "Mint Monster Girl"}
+                  </button>
+              ) : (
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
+                    >
+                      Close
+                    </button>
+              )}
+            </div>
+          )}
         </div>
-      </div>
     );
   };
+
 
   return (
     <div className="relative min-h-screen flex flex-col items-center p-4 w-full pt-8">
@@ -461,7 +489,7 @@ function MonsterGirlGenerator() {
         <h1
           className={`${gothicByte.className} text-4xl md:text-8xl text-center font-bold mb-4 text-white`}
         >
-          Monster Girl Generator
+          Monster Speed Dating
         </h1>
         {!loading && (
           <button
@@ -469,7 +497,7 @@ function MonsterGirlGenerator() {
             disabled={loading}
             className="px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 glow-on-hover"
           >
-            Generate Monster Girl
+            Create Monster Girl
           </button>
         )}
         {loading && <TypingEffect />}
@@ -505,20 +533,20 @@ function MonsterGirlGenerator() {
                 </div>
                 {characterData && (
                   <div className="flex w-full justify-center items-center">
-                    <button
+                    {/* <button
                       onClick={handleMint}
                       disabled={minting}
                       className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
                     >
                       {minting ? "Minting..." : "Mint Monster Girl"}
-                    </button>
+                    </button> */}
 
                     {/* Chat Now Button */}
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="mb-4 mt-4 ml-4 px-8 py-4 bg-blue-600 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-blue-500"
+                      className="mb-4 mt-4 ml-4 px-8 py-4 bg-zinc-900 shadow-lg shadow-violet-500/50 border-2 border-violet-500 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800"
                     >
-                      Chat Now
+                      Play Now
                     </button>
                   </div>
                 )}
