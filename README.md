@@ -11,6 +11,11 @@ Welcome to **Monster Speed Dating**, where you get the chance to date unique mon
 #### [👉 WATCH DEMO VIDEO 👈](https://youtube.com)
 #### [👉 PLAY NOW 👈](https://monster-girl-generator.vercel.app/)
 
+## ⚙️ Deployments
+
+- **Avalanche Mainnet**
+- [0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946](https://subnets.avax.network/c-chain/address/0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946)
+
 ## 🚀 Game Concept
 
 **Monster Speed Dating** is an AI-powered dating simulator game with a twist: the characters you meet are all unique, AI-generated monster girls! You’ll chat, flirt, and compete in various mini-games, all while using cutting-edge AI technology to drive the interactions.
