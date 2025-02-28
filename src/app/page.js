@@ -14,7 +14,7 @@ import {
 import { WagmiProvider, useWriteContract } from "wagmi";
 import { http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { base } from "wagmi/chains";
+import { avalanche } from "wagmi/chains";
 import { PinataSDK } from "pinata-web3";
 import imageCompression from "browser-image-compression"; // Use browser-image-compression
 
@@ -28,11 +28,11 @@ const gothicByte = localFont({
 });
 
 // Create a custom chain config for Base Sepolia using your RPC URL.
-const customBase = {
-  ...base,
+const customAvalanche = {
+  ...avalanche,
   rpcUrls: {
     default:
-      "https://base-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W",
+      "https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W",
   },
 };
 
@@ -40,10 +40,10 @@ const customBase = {
 const config = getDefaultConfig({
   appName: "Monster Girl Generator",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-  chains: [customBase],
+  chains: [customAvalanche],
   transports: {
-    [customBase.id]: http(
-      "https://base-sepolia.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"
+    [customAvalanche.id]: http(
+      "https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"
     ),
   },
   ssr: true,
@@ -52,7 +52,7 @@ const config = getDefaultConfig({
 const queryClient = new QueryClient();
 
 // Smart contract configuration.
-const CONTRACT_ADDRESS = "0x019c7d3FdC33E28967c3Abe83F3BdF55f16dbF59";
+const CONTRACT_ADDRESS = "0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946";
 const contractABI = [
   {
     inputs: [{ internalType: "string", name: "tokenUrl", type: "string" }],
@@ -554,13 +554,13 @@ function MonsterGirlGenerator() {
                 </div>
                 {characterData && (
                   <div className="flex w-full justify-center items-center">
-                    {/* <button
+                    <button
                       onClick={handleMint}
                       disabled={minting}
                       className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
                     >
                       {minting ? "Minting..." : "Mint Monster Girl"}
-                    </button> */}
+                    </button>
 
                     {/* Chat Now Button */}
                     <button
