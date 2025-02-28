@@ -16,6 +16,9 @@ Welcome to **Monster Speed Dating**, where you get the chance to date unique mon
 - **Avalanche Mainnet**
 - [0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946](https://subnets.avax.network/c-chain/address/0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946)
 
+- **Core Testnet**
+- [0x0fcFfe614B944784f262FCf41e665E357337b3C0](https://scan.test.btcs.network/address/0x0fcFfe614B944784f262FCf41e665E357337b3C0)
+
 ## 🚀 Game Concept
 
 **Monster Speed Dating** is an AI-powered dating simulator game with a twist: the characters you meet are all unique, AI-generated monster girls! You’ll chat, flirt, and compete in various mini-games, all while using cutting-edge AI technology to drive the interactions.
