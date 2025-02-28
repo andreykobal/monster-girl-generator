@@ -28,7 +28,7 @@ The core gameplay loop involves:
 
 ## 🎮 Game Features
 
-- **2000+ AI-Powered Characters**: Each character is generated with a unique story and personality.
+- **AI-Powered Characters**: Each character is generated with a unique story and personality.
 - **Speed Dating Mode**: Engage in quick interactions and try to impress your date before time runs out!
 - **Multiple Endings**: Depending on your performance, the date can end in success or failure (or something worse... 😱).
 - **NFT Integration**: Mint your monster girl as an NFT once you’ve impressed her!
