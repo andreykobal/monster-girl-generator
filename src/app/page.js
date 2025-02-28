@@ -5,13 +5,14 @@ import axios from "axios";
 import BgImage from "./assets/bg.jpeg";
 import localFont from "next/font/local";
 
+
 import "@rainbow-me/rainbowkit/styles.css";
 import {
   getDefaultConfig,
   RainbowKitProvider,
   ConnectButton,
 } from "@rainbow-me/rainbowkit";
-import { WagmiProvider, useWriteContract } from "wagmi";
+import { WagmiProvider, useWriteContract, useAccount } from "wagmi";
 import { http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { avalanche } from "wagmi/chains";
@@ -36,15 +37,35 @@ const customAvalanche = {
   },
 };
 
+// Add this new chain configuration
+const coreBlockchainTestnet = {
+  id: 1115,
+  name: 'Core Blockchain Testnet',
+  network: 'core-blockchain-testnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'tCORE',
+    symbol: 'tCORE',
+  },
+  rpcUrls: {
+    default: 'https://rpc.test.btcs.network',
+  },
+  blockExplorers: {
+    default: { name: 'CoreScan', url: 'https://scan.test.btcs.network' },
+  },
+  testnet: true,
+};
+
 // Configure RainbowKit/wagmi with your custom chain.
 const config = getDefaultConfig({
   appName: "Monster Girl Generator",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-  chains: [customAvalanche],
+  chains: [customAvalanche, coreBlockchainTestnet], // add the new chain here
   transports: {
     [customAvalanche.id]: http(
       "https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"
     ),
+    [coreBlockchainTestnet.id]: http("https://rpc.test.btcs.network"), // new transport for Core
   },
   ssr: true,
 });
@@ -52,7 +73,7 @@ const config = getDefaultConfig({
 const queryClient = new QueryClient();
 
 // Smart contract configuration.
-const CONTRACT_ADDRESS = "0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946";
+// const CONTRACT_ADDRESS = "0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946";
 const contractABI = [
   {
     inputs: [{ internalType: "string", name: "tokenUrl", type: "string" }],
@@ -330,6 +351,8 @@ async function uploadMetadataToPinata(metadata) {
 // MONSTER GIRL GENERATOR COMPONENT
 // -----------------------------------------------------------------------------
 function MonsterGirlGenerator() {
+  const account = useAccount();
+
   const [loading, setLoading] = useState(false);
   const [characterData, setCharacterData] = useState(null);
   const [error, setError] = useState(null);
@@ -409,10 +432,16 @@ function MonsterGirlGenerator() {
       const metadataUrl = await uploadMetadataToPinata(metadata);
       console.log("Uploaded metadata URL:", metadataUrl);
 
+      const contractAddress =
+        account.chain?.id === coreBlockchainTestnet.id
+          ? "0x0fcFfe614B944784f262FCf41e665E357337b3C0"  // Core Testnet address
+          : "0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946"; // Default contract address
+
+
       // Call the smart contract createToken function with the metadata URL.
       const txHash = await mintToken({
         abi: contractABI,
-        address: CONTRACT_ADDRESS,
+        address: contractAddress,
         functionName: "createToken",
         args: [metadataUrl],
       });
@@ -461,7 +490,7 @@ function MonsterGirlGenerator() {
             onGameOver={handleGameOver}
           />
           ) : (
-            <div className="bg-zinc-950 bg-opacity-80 p-16 rounded-xl text-center max-w-3xl font-mono">
+            <div className="bg-zinc-950 bg-opacity-80 p-16 rounded-xl text-center max-w-3xl font-mono text-white">
               <h2 className="text-3xl font-mono font-bold">
                   {gameOver ? "Success! 🎉" : "You died! ☠️"}
               </h2>
@@ -554,13 +583,13 @@ function MonsterGirlGenerator() {
                 </div>
                 {characterData && (
                   <div className="flex w-full justify-center items-center">
-                    {/*<button
+                    <button
                       onClick={handleMint}
                       disabled={minting}
                       className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
                     >
                       {minting ? "Minting..." : "Mint Monster Girl"}
-                    </button> */}
+                    </button>
 
                     {/* Chat Now Button */}
                     <button
