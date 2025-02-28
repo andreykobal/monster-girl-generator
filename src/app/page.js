@@ -56,16 +56,36 @@ const coreBlockchainTestnet = {
   testnet: true,
 };
 
+const ancient8TestnetV2 = {
+  id: 28122024,
+  name: "Ancient8 Testnet - Celestia",
+  network: "ancient8-testnet-v2",
+  nativeCurrency: {
+    decimals: 18,
+    name: "ETH",
+    symbol: "ETH",
+  },
+  rpcUrls: {
+    default: "https://rpcv2-testnet.ancient8.gg",
+    websocket: "wss://rpcv2-testnet.ancient8.gg",
+  },
+  blockExplorers: {
+    default: { name: "Ancient8 Testnet Explorer", url: "https://ancient8.testnet.routescan.io" },
+    alternative: { name: "ScanV2", url: "https://scanv2-testnet.ancient8.gg" },
+  },
+  testnet: true,
+};
+
+
 // Configure RainbowKit/wagmi with your custom chain.
 const config = getDefaultConfig({
   appName: "Monster Girl Generator",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-  chains: [customAvalanche, coreBlockchainTestnet], // add the new chain here
+  chains: [customAvalanche, coreBlockchainTestnet, ancient8TestnetV2],
   transports: {
-    [customAvalanche.id]: http(
-      "https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"
-    ),
-    [coreBlockchainTestnet.id]: http("https://rpc.test.btcs.network"), // new transport for Core
+    [customAvalanche.id]: http("https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"),
+    [coreBlockchainTestnet.id]: http("https://rpc.test.btcs.network"),
+    [ancient8TestnetV2.id]: http("https://rpcv2-testnet.ancient8.gg"),
   },
   ssr: true,
 });
@@ -435,7 +455,9 @@ function MonsterGirlGenerator() {
       const contractAddress =
         account.chain?.id === coreBlockchainTestnet.id
           ? "0x0fcFfe614B944784f262FCf41e665E357337b3C0"  // Core Testnet address
-          : "0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946"; // Default contract address
+          : account.chain?.id === ancient8TestnetV2.id
+            ? "0x30d9f3de700F13006C91Ce7C489657E0732B789e"  // Ancient8 Testnet V2 address
+            : "0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946"; // Default contract address
 
 
       // Call the smart contract createToken function with the metadata URL.
