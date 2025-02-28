@@ -8,7 +8,7 @@ Welcome to **Monster Speed Dating**, where you get the chance to date unique mon
 
 ## ✅ Demo
 
-#### [👉 WATCH DEMO VIDEO 👈](https://youtube.com)
+#### [👉 WATCH DEMO VIDEO 👈](https://www.youtube.com/watch?v=RI4Ma6etPX0)
 #### [👉 PLAY NOW 👈](https://monster-girl-generator.vercel.app/)
 
 ## ⚙️ Deployments
