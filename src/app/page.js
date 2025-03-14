@@ -122,13 +122,21 @@ function blobToBase64(blob) {
 function parseCharacterCardFallback(str) {
   const result = {};
 
-  // Extract all key-value pairs except "firstMessage"
-  const regex = /['"]?([\w\s]+)['"]?\s*:\s*(['"])([\s\S]*?)\2/g;
+  // Updated regex: matches key, then colon, then either a quoted value or an unquoted value (for numbers, booleans, etc.)
+  const regex = /['"]?([\w\s]+)['"]?\s*:\s*(?:(['"])([\s\S]*?)\2|([^,\s}]+))/g;
   let match;
   while ((match = regex.exec(str)) !== null) {
     const key = match[1].trim();
+    // Use group 3 if a quoted value exists; otherwise use group 4 for unquoted values.
+    let value = (match[3] !== undefined ? match[3].trim() : match[4].trim());
+
+    // Optionally convert numeric strings to actual numbers.
+    if (!isNaN(value)) {
+      value = Number(value);
+    }
+
     if (key !== "firstMessage") {
-      result[key] = match[3].trim();
+      result[key] = value;
     }
   }
 
@@ -144,6 +152,7 @@ function parseCharacterCardFallback(str) {
 
 
 
+
 // Generate the character card using an API (with retry logic).
 async function generateCharacterCard(imageDescription, retryCount = 0) {
   const payloadCharacterCard = {
@@ -153,12 +162,12 @@ async function generateCharacterCard(imageDescription, retryCount = 0) {
       {
         role: "system",
         content:
-          "You are a creative writer that helps to create a character card in JSON format.",
+          "You are a creative writer that helps to create a character card in JSON format. Include only the JSON object in your response.",
       },
       {
         role: "user",
         content: `### Task:
-Using the provided image description, create a single monster girl character card in JSON format. Include only the JSON object in your response. Do not add any additional text.
+Using the provided image description, create a single monster girl character card in JSON format. Include only the JSON object in your response. Do not include any additional text or comments.
 
 ### Output Format (JSON):
 
