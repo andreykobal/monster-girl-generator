@@ -627,13 +627,16 @@ function MonsterGirlGenerator() {
                 </div>
                 {characterData && (
                   <div className="flex w-full justify-center items-center">
-                    {/* <button
-                      onClick={handleMint}
-                      disabled={minting}
-                      className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white rounded hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
-                    >
-                      {minting ? "Minting..." : "Mint Monster Girl"}
-                    </button> */}
+                    {account.address?.toLowerCase() ===
+                      "0x3bc9d62e7684212ccd88f64e501144aedec97005".toLowerCase() && (
+                        <button
+                          onClick={handleMint}
+                          disabled={minting}
+                          className="mb-4 mt-4 px-8 py-4 bg-zinc-900 text-lg font-bold font-mono rounded-full text-white hover:bg-zinc-800 disabled:opacity-50 shadow-lg shadow-orange-500/50 border-2 border-orange-500"
+                        >
+                          {minting ? "Minting..." : "Mint Monster Girl"}
+                        </button>
+                      )}
 
                     {/* Chat Now Button */}
                     <button
