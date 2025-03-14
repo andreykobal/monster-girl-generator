@@ -120,32 +120,45 @@ function blobToBase64(blob) {
 
 // Fallback: Use regex extraction to parse a character card string.
 function parseCharacterCardFallback(str) {
+  const result = {};
+
+  // Extract all key-value pairs except "firstMessage"
   const regex = /['"]?([\w\s]+)['"]?\s*:\s*(['"])([\s\S]*?)\2/g;
   let match;
-  const result = {};
   while ((match = regex.exec(str)) !== null) {
     const key = match[1].trim();
-    const value = match[3].trim();
-    result[key] = value;
+    if (key !== "firstMessage") {
+      result[key] = match[3].trim();
+    }
   }
+
+  // For "firstMessage", capture up to the first closing curly brace using a lookahead.
+  const regexFM = /"firstMessage"\s*:\s*(['"])([\s\S]*?)\1(?=\s*})/m;
+  const matchFM = regexFM.exec(str);
+  if (matchFM) {
+    result["firstMessage"] = matchFM[2].trim();
+  }
+
   return result;
 }
+
+
 
 // Generate the character card using an API (with retry logic).
 async function generateCharacterCard(imageDescription, retryCount = 0) {
   const payloadCharacterCard = {
-    model: "sao10k/l3.1-euryale-70b",
-    max_tokens: 1024,
+    model: "sao10k/l3.1-70b-hanami-x1",
+    max_tokens: 512,
     messages: [
       {
         role: "system",
         content:
-          "You are a creative writer that helps to create monster girl character cards.",
+          "You are a creative writer that helps to create a character card in JSON format.",
       },
       {
         role: "user",
         content: `### Task:
-Using the provided image description, create a character card in JSON format.
+Using the provided image description, create a single monster girl character card in JSON format. Include only the JSON object in your response. Do not add any additional text.
 
 ### Output Format (JSON):
 
@@ -155,8 +168,8 @@ Using the provided image description, create a character card in JSON format.
   "age": "Character's age",
   "race": "Character's race",
   "profession": "Character's profession",
-  "bio": "A short biography (2-3 paragraphs) written in the third person. It should be exaggerated, sassy, hilarious, absurd, awkward, and sexy. Use Gen Z slang. Include a short description of character's appearance and personality.",
-  "firstMessage": "A short roleplay starter (maximum 1 paragraph), random and absurd situation between the character and user, that begins with a narrative enclosed in asterisks (**) followed by direct speech. Use hero's journey, Gen Z slang, and humor. Address the user as 'you'."
+  "bio": "A short biography (1 paragraph) written in the third person. It should be exaggerated, sassy, hilarious, absurd, and awkward. Use Gen Z slang. Include a short description of character's appearance and personality.",
+  "firstMessage": "A short roleplay starter (2-3 sentences), random and absurd situation between the character and user, that begins with actions enclosed in *asterisks* written in third person, followed by dialogue speech. Use hero's journey, Gen Z slang, and humor.."
 }
 \`\`\`
 
