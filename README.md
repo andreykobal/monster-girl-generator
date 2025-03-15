@@ -13,14 +13,8 @@ Welcome to **Monster Speed Dating**, where you get the chance to date unique mon
 
 ## ⚙️ Deployments
 
-- **Avalanche Mainnet**
-- [0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946](https://subnets.avax.network/c-chain/address/0xB13624E8cC4Fb4Cd860c6D6c6F767776Ea497946)
-
 - **Core Testnet**
 - [0x0fcFfe614B944784f262FCf41e665E357337b3C0](https://scan.test.btcs.network/address/0x0fcFfe614B944784f262FCf41e665E357337b3C0)
-
-- **Ancient8 Testnet**
-- [0x30d9f3de700F13006C91Ce7C489657E0732B789e](https://scanv2-testnet.ancient8.gg/address/0x30d9f3de700F13006C91Ce7C489657E0732B789e)
 
 ## 🚀 Game Concept
 
