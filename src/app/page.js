@@ -83,9 +83,9 @@ const config = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
   chains: [customAvalanche, coreBlockchainTestnet, ancient8TestnetV2],
   transports: {
-    [customAvalanche.id]: http("https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"),
+    // [customAvalanche.id]: http("https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"),
     [coreBlockchainTestnet.id]: http("https://rpc.test.btcs.network"),
-    [ancient8TestnetV2.id]: http("https://rpcv2-testnet.ancient8.gg"),
+    // [ancient8TestnetV2.id]: http("https://rpcv2-testnet.ancient8.gg"),
   },
   ssr: true,
 });
