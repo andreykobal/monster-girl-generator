@@ -81,7 +81,7 @@ const ancient8TestnetV2 = {
 const config = getDefaultConfig({
   appName: "Monster Girl Generator",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-  chains: [customAvalanche, coreBlockchainTestnet, ancient8TestnetV2],
+  chains: [coreBlockchainTestnet],
   transports: {
     // [customAvalanche.id]: http("https://avax-mainnet.g.alchemy.com/v2/qIrFR-Jsp877rR-MIYcE3EfutHGjKh1W"),
     [coreBlockchainTestnet.id]: http("https://rpc.test.btcs.network"),
